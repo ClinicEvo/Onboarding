@@ -83,8 +83,15 @@ export async function POST(request: Request) {
         contactEmail,
         businessType: values.businessType ?? "",
         submittedAt,
-        // Folder-safe name for Drive.
-        folderName: businessName.replace(/[^\w\s-]/g, "").trim().slice(0, 80),
+        // Strip only the characters OneDrive/SharePoint actually forbid.
+        // Anything broader mangles real client names — "1% Club" and
+        // "Elliot Nation (Body-Restore)" both have to survive verbatim or
+        // they will not match the folders that already exist.
+        folderName: businessName
+          .replace(/["*:<>?/\\|]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 80),
         // Pre-formatted Markdown so the Make scenario only has to write a file.
         brief: renderBrief(values, accessGrants, submittedAt),
         values,
