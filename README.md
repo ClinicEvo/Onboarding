@@ -119,6 +119,41 @@ Vercel for the deployed site.
 | --- | --- |
 | `MAKE_WEBHOOK_URL` | The custom webhook's URL from Make |
 | `MAKE_WEBHOOK_SECRET` | Long random string — `openssl rand -hex 32`. Must match the filter on module 2. |
+| `CLIENT_CODES` | Per-client access codes. See below. Optional. |
+
+---
+
+## Per-client links
+
+Each client gets their own link:
+
+```
+https://onboarding-clinic-evo.vercel.app/?c=onepercent
+```
+
+Set the codes in `CLIENT_CODES`, comma- or newline-separated:
+
+```
+CLIENT_CODES="onepercent=1% Club,bodyrestore=Elliot Nation (Body-Restore)"
+```
+
+The name on the right **must match the OneDrive folder exactly**, because it is
+what the brief gets filed under.
+
+That is the more important half of this feature. Without it the folder is named
+from whatever the client types, so someone from 1% Club writing "The 1 Percent
+Club" gets a brand new folder beside their real one. With a code, they can type
+anything they like and it still files correctly — the typed name is kept in the
+brief, it just does not decide the folder. The business-name field is also
+prefilled from the list, so most clients never touch it.
+
+The gate is enforced in two places. The page refuses to render the form without
+a valid code, and `/api/submit` checks it again independently — anything can
+POST to that route directly, so it cannot trust the page that rendered the form.
+
+**If `CLIENT_CODES` is unset the form is open to anyone**, which is how it
+behaved before this existed. Setting it turns gating on. Codes are
+case-insensitive.
 
 Neither is prefixed `NEXT_PUBLIC_`, so neither reaches the browser. Set both in
 Vercel's project settings for the deployed version.

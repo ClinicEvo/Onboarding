@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { renderBrief } from "@/lib/brief";
+import { lookupClient } from "@/lib/clients";
 
 /**
  * Receives the completed form and forwards it to Make.
@@ -12,6 +13,7 @@ import { renderBrief } from "@/lib/brief";
 const payloadSchema = z.object({
   values: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
   accessGrants: z.record(z.string(), z.string()),
+  clientCode: z.string().optional(),
   submittedAt: z.string(),
 });
 
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unexpected form data." }, { status: 400 });
   }
 
-  const { values, accessGrants, submittedAt } = result.data;
+  const { values, accessGrants, clientCode, submittedAt } = result.data;
 
   const businessName = String(values.businessName ?? "").trim();
   const contactEmail = String(values.contactEmail ?? "").trim();
@@ -48,6 +50,32 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  /*
+    Re-check the access code here rather than trusting the page that rendered
+    the form. Anything can POST to this route directly, so the gate has to be
+    enforced at the point the data is accepted.
+  */
+  const client = lookupClient(clientCode);
+  if (client === null) {
+    return Response.json({ error: "That link is not valid." }, { status: 403 });
+  }
+
+  /*
+    When gating is on, the destination folder is named from our own client
+    list rather than from what the client typed. That is the whole point of
+    the code: a returning "1% Club" lands in their real folder instead of a
+    new "The 1 Percent Club" beside it.
+
+    Either way, strip only the characters OneDrive genuinely forbids —
+    anything broader mangles names like "Elliot Nation (Body-Restore)" so
+    they stop matching the folder that already exists.
+  */
+  const folderName = (client ?? businessName)
+    .replace(/["*:<>?/\\|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
 
   const webhookUrl = process.env.MAKE_WEBHOOK_URL;
 
@@ -60,7 +88,9 @@ export async function POST(request: Request) {
         { status: 500 },
       );
     }
-    console.log("[submit] MAKE_WEBHOOK_URL unset — brief follows:\n");
+    console.log(
+      `[submit] MAKE_WEBHOOK_URL unset. Would file under: ${folderName}\n`,
+    );
     console.log(renderBrief(values, accessGrants, submittedAt));
     return Response.json({ ok: true, delivered: false });
   }
@@ -83,15 +113,8 @@ export async function POST(request: Request) {
         contactEmail,
         businessType: values.businessType ?? "",
         submittedAt,
-        // Strip only the characters OneDrive/SharePoint actually forbid.
-        // Anything broader mangles real client names — "1% Club" and
-        // "Elliot Nation (Body-Restore)" both have to survive verbatim or
-        // they will not match the folders that already exist.
-        folderName: businessName
-          .replace(/["*:<>?/\\|]/g, "")
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 80),
+        folderName,
+        clientCode: clientCode ?? "",
         // Pre-formatted Markdown so the Make scenario only has to write a file.
         brief: renderBrief(values, accessGrants, submittedAt),
         values,

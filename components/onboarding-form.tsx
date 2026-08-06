@@ -114,10 +114,21 @@ function readDraft(): Draft | null {
   }
 }
 
-export default function OnboardingForm() {
+interface Props {
+  /** Per-client code from the URL. Empty when gating is off. */
+  clientCode: string;
+  /** Client name resolved from that code. Empty when gating is off. */
+  clientName: string;
+}
+
+export default function OnboardingForm({ clientCode, clientName }: Props) {
   const [draft] = useState(readDraft);
   const [stepIndex, setStepIndex] = useState(draft?.stepIndex ?? 0);
-  const [values, setValues] = useState<Values>(draft?.values ?? {});
+  // Prefill the business name when we already know who this is — one less
+  // thing to type, and it shows the client the link was meant for them.
+  const [values, setValues] = useState<Values>(
+    draft?.values ?? (clientName ? { businessName: clientName } : {}),
+  );
   const [grants, setGrants] = useState<Grants>(draft?.grants ?? {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("idle");
@@ -194,6 +205,7 @@ export default function OnboardingForm() {
         body: JSON.stringify({
           values,
           accessGrants: grants,
+          clientCode,
           submittedAt: new Date().toISOString(),
         }),
       });
