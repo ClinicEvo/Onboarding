@@ -32,8 +32,9 @@ POST /api/submit          validates, renders the brief, adds the shared secret
       ▼
 Make webhook              filter rejects anything with the wrong secret
       │
-      ├─►  OneDrive: create a folder named after the business
-      └─►  OneDrive: write "<Business> — onboarding brief.md" inside it
+      └─►  OneDrive: Master Folder/Clients/<Business>/
+                     └── <Business> — onboarding brief.md
+                     (folder reused if it exists, created if not)
 ```
 
 The Make webhook URL never reaches the browser. If it did, anyone could read it
@@ -44,16 +45,32 @@ out of the page source and post junk straight into the Drive.
 ## The Make scenario
 
 Already built and running — **Clinic Evo — onboarding submissions**, scenario
-`9627307` in Make team 297679 (`eu2.make.com`). Three modules:
+`9627307` in Make team 297679 (`eu2.make.com`). Two modules:
 
 | # | Module | What it does |
 | --- | --- | --- |
 | 1 | Custom webhook | Receives the submission. Hook `4302421`. |
-| 2 | OneDrive → Create a Folder | Named `{{1.folderName}}`, inside `Master Folder/Clients`. Carries the security filter. |
-| 3 | OneDrive → Upload a File | `{{1.businessName}} — onboarding brief.md`, content `{{1.brief}}`, into the folder module 2 just made. |
+| 2 | OneDrive → Upload a File | Writes the brief by **path**. Carries the security filter. |
 
-Result: `Master Folder/Clients/<Business Name>/<Business Name> — onboarding brief.md`,
-sitting alongside the existing client folders.
+Module 2 addresses the destination as a path rather than a folder ID:
+
+```
+folder    /Master Folder/Clients/{{1.folderName}}
+filename  {{1.businessName}} — onboarding brief.md
+data      {{1.brief}}
+```
+
+**Addressing by path is what makes returning clients work.** OneDrive reuses the
+folder when it already exists and creates it when it does not, so a brief for an
+existing client lands inside their real folder instead of creating a duplicate
+alongside it. Both cases are verified against the live form. It also means no
+separate create-folder module, so each submission costs two Make operations
+rather than three.
+
+This is why `folderName` in `app/api/submit/route.ts` strips only the characters
+OneDrive genuinely forbids (`" * : < > ? / \ |`). Anything more aggressive
+mangles real client names — `1% Club` and `Elliot Nation (Body-Restore)` have to
+survive verbatim or the path will not match the folder that already exists.
 
 **The filter on module 2 is the only thing protecting the webhook.** It compares
 `{{1.secret}}` against the shared secret; anything else stops there. The secret
@@ -71,22 +88,19 @@ current Make UI — the Connections settings page has no add button.
 
 ### About the drive target
 
-`Master Folder` lives in **Danny's** OneDrive, not Simon's, so modules 2 and 3
-address it by explicit Drive ID rather than using Make's "My Drive" default:
+`Master Folder` lives in **Danny's** OneDrive, not Simon's, so module 2 addresses
+it by explicit Drive ID rather than using Make's "My Drive" default:
 
 ```
-drive   b!GxTpz6BN9E-Jkr1Y1bkw4HWbs_1bOmBIot-suIe2ccpcWMTHWzSbRY7zjuKfRCSQ
-folder  012VJQ5BNXT3XKYBCQ45CYSXNWKIDQ3PGQ      (Master Folder/Clients)
+drive  b!GxTpz6BN9E-Jkr1Y1bkw4HWbs_1bOmBIot-suIe2ccpcWMTHWzSbRY7zjuKfRCSQ
 ```
-
-Module 3 takes its drive from `{{2.parentReference.driveId}}` so it always
-follows wherever module 2 wrote, rather than repeating the hard-coded ID.
 
 This works because Danny shares that folder with Simon and the connection is
 Simon's. **It therefore depends on two people's accounts** — if either changes,
-or Danny unshares, submissions fail. Moving client records to a SharePoint team
-site and repointing both modules there would remove that dependency, and is the
-better long-term home.
+or Danny unshares, submissions fail. They will fail loudly in Make's execution
+log rather than silently, but they will fail. Moving client records to a
+SharePoint team site and repointing module 2 there would remove that dependency,
+and is the better long-term home.
 
 ### Not built yet
 
