@@ -51,7 +51,7 @@ Already built and running — **Clinic Evo — onboarding submissions**, scenari
 | --- | --- | --- |
 | 1 | Custom webhook | Receives the submission. Hook `4302421`. |
 | 3 | OneDrive → Upload a File | Writes the brief by **path**. Carries the security filter. |
-| 4 | Microsoft 365 Email → Send an Email | Notifies Simon. **Needs a connection — see below.** |
+| 4 | Microsoft 365 Email → Send an Email | Notifies Simon, with a link to the brief. |
 
 (Module numbering skips 2; the original create-folder module was removed when
 path upload replaced it.)
@@ -106,26 +106,29 @@ log rather than silently, but they will fail. Moving client records to a
 SharePoint team site and repointing module 2 there would remove that dependency,
 and is the better long-term home.
 
-### The notification needs one more connection
+### The notification, and its error handler
 
-Module 4 is built and wired but **has no connection yet, so no email is sent.**
+Module 4 emails `Simon@clinicevolution.com` on every submission — business name,
+type, contact, where it filed, and a link straight to the brief. Because it is
+sent from Simon to Simon it lands in both Inbox and Sent Items, which is normal.
 
-The Microsoft connection was created from the OneDrive module, so Microsoft
-granted it file scopes only. Sending mail needs `Mail.Send`, which it does not
-have — attempting it returns `[403] Access is denied`. Make cannot widen an
-existing connection's scopes after the fact; the email module needs its own
-connection, authorised from that module.
+**Module 4 has an `Ignore` error handler and that is deliberate.** A failing
+notification must never cost a submission: without it, a mail error aborts the
+run *after* the brief has been written, marking a perfectly good submission as
+failed. With it, the send is attempted, any failure is swallowed and the run
+completes. Verified both ways — with module 4 unconnected the run still returned
+status 1 with the file correctly written.
 
-To switch it on: open the scenario, click module 4, **Create a connection**,
-sign in as `Simon@clinicevolution.com`, save.
+The trade-off is that a broken notification is silent, since the run reports
+success either way. If emails ever stop arriving, check module 4's connection
+first rather than the execution log.
 
-**Until then nothing breaks.** Module 4 has an `Ignore` error handler, so a
-failed send is swallowed and the run still completes — the brief files exactly
-as it should and the execution is logged as a success. Verified: a submission
-with module 4 unconnected returns status 1 with the file written.
-
-That error handler is worth keeping even once mail works. A notification failing
-should never cost you the submission.
+**A scope gotcha worth remembering.** Microsoft connections in Make carry only
+the scopes requested by the module that created them. This connection was made
+from the OneDrive module, so it had file scopes but not `Mail.Send`, and the
+email module returned `[403] Access is denied` until it was reauthorised. Adding
+a Microsoft module that needs a permission the existing connection lacks will
+fail the same way — reauthorise the connection from the new module.
 
 ---
 
