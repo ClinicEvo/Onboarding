@@ -50,7 +50,11 @@ Already built and running — **Clinic Evo — onboarding submissions**, scenari
 | # | Module | What it does |
 | --- | --- | --- |
 | 1 | Custom webhook | Receives the submission. Hook `4302421`. |
-| 2 | OneDrive → Upload a File | Writes the brief by **path**. Carries the security filter. |
+| 3 | OneDrive → Upload a File | Writes the brief by **path**. Carries the security filter. |
+| 4 | Microsoft 365 Email → Send an Email | Notifies Simon. **Needs a connection — see below.** |
+
+(Module numbering skips 2; the original create-folder module was removed when
+path upload replaced it.)
 
 Module 2 addresses the destination as a path rather than a folder ID:
 
@@ -102,11 +106,26 @@ log rather than silently, but they will fail. Moving client records to a
 SharePoint team site and repointing module 2 there would remove that dependency,
 and is the better long-term home.
 
-### Not built yet
+### The notification needs one more connection
 
-No notification step. Add an Email, Slack or Teams module after module 3 if you
-want a ping on submission — `{{1.businessName}}`, `{{1.businessType}}`,
-`{{1.contactEmail}}` and `{{3.webUrl}}` are the useful fields.
+Module 4 is built and wired but **has no connection yet, so no email is sent.**
+
+The Microsoft connection was created from the OneDrive module, so Microsoft
+granted it file scopes only. Sending mail needs `Mail.Send`, which it does not
+have — attempting it returns `[403] Access is denied`. Make cannot widen an
+existing connection's scopes after the fact; the email module needs its own
+connection, authorised from that module.
+
+To switch it on: open the scenario, click module 4, **Create a connection**,
+sign in as `Simon@clinicevolution.com`, save.
+
+**Until then nothing breaks.** Module 4 has an `Ignore` error handler, so a
+failed send is swallowed and the run still completes — the brief files exactly
+as it should and the execution is logged as a success. Verified: a submission
+with module 4 unconnected returns status 1 with the file written.
+
+That error handler is worth keeping even once mail works. A notification failing
+should never cost you the submission.
 
 ---
 
