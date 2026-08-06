@@ -1,26 +1,189 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Clinic Evo design system.
+  Values taken from the design system package (tokens/colors.css,
+  typography.css, spacing.css, effects.css). Tailwind theme names are
+  ergonomic; the DS token each one maps to is noted alongside.
+*/
+
+@theme {
+  --color-paper: #ffffff; /* --color-paper */
+  --color-ink: #0d1b2a; /* --color-ink, navy */
+  --color-surface: #f5f7fa; /* --color-surface */
+  --color-muted: #6b7280; /* --color-muted */
+  --color-charcoal: #374151; /* --color-charcoal */
+  --color-line: #e5e7eb; /* --color-border, hairline */
+  --color-error: #b91c1c; /* --color-error */
+
+  --color-accent: #ff5b4a; /* --color-accent, coral */
+  --color-accent-dim: #e04535; /* --color-accent-dim */
+  --color-accent-light: #fff1ef; /* --color-accent-light */
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* DS radii scale. Note: the shipped Button renders at 4px, not the
+     documented 8px token — matching the shipped component. */
+  --radius-input: 6px;
+  --radius-btn: 4px;
+  --radius-card: 14px;
+  --radius-panel: 18px;
+
+  --shadow-card:
+    0 1px 2px rgba(13, 27, 42, 0.04), 0 12px 32px -16px rgba(13, 27, 42, 0.12);
+  --shadow-card-hover:
+    0 2px 4px rgba(13, 27, 42, 0.05), 0 24px 48px -20px rgba(13, 27, 42, 0.2);
+
+  --container-main: 75rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    /* DS runs body at a deliberately loose 1.75 for a calm, readable feel. */
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /*
+    The brand's one textural motif. DS applies it per-section; here it is a
+    single fixed layer so it never repaints on scroll.
+  */
+  body::before {
+    content: "";
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.04;
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 8s steps(10) infinite;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes grain {
+  0%,
+  100% {
+    background-position: 0 0;
+  }
+  10% {
+    background-position: -5% -10%;
+  }
+  20% {
+    background-position: -15% 5%;
+  }
+  30% {
+    background-position: 7% -25%;
+  }
+  40% {
+    background-position: -5% 25%;
+  }
+  50% {
+    background-position: -15% 10%;
+  }
+  60% {
+    background-position: 15% 0;
+  }
+  70% {
+    background-position: 0 15%;
+  }
+  80% {
+    background-position: 3% 35%;
+  }
+  90% {
+    background-position: -10% 10%;
+  }
+}
+
+@layer components {
+  /* DS eyebrow: uppercase micro-label in coral with a short leading rule. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: var(--color-accent);
+    opacity: 0.55;
+  }
+
+  /* DS card-surface: white fill, hairline border, soft diffuse shadow. */
+  .card-surface {
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .field-input {
+    width: 100%;
+    border-radius: var(--radius-input);
+    border: 1px solid var(--color-line);
+    background-color: var(--color-paper);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .field-input::placeholder {
+    color: color-mix(in srgb, var(--color-muted) 60%, transparent);
+  }
+
+  .field-input:hover:not(:focus) {
+    border-color: var(--color-muted);
+  }
+
+  .field-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+    outline: none;
+  }
+
+  .field-input[aria-invalid="true"] {
+    border-color: var(--color-error);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
