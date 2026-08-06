@@ -72,13 +72,13 @@ export async function POST(request: Request) {
     const forwarded = await fetch(webhookUrl, {
       method: "POST",
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        // Shared secret so the webhook can reject anything that did not
-        // come through this route. Verified in the Make scenario's filter.
-        "x-onboarding-secret": process.env.MAKE_WEBHOOK_SECRET ?? "",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        // Shared secret so the scenario can reject anything that did not come
+        // through this route. Sent in the body rather than a header purely
+        // because Make filters on body fields far more reliably than on
+        // hyphenated header names. Equally private either way over HTTPS.
+        secret: process.env.MAKE_WEBHOOK_SECRET ?? "",
         businessName,
         contactEmail,
         businessType: values.businessType ?? "",
