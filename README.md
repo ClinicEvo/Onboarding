@@ -49,8 +49,11 @@ Already built and running — **Clinic Evo — onboarding submissions**, scenari
 | # | Module | What it does |
 | --- | --- | --- |
 | 1 | Custom webhook | Receives the submission. Hook `4302421`. |
-| 2 | OneDrive → Create a Folder | Named `{{1.folderName}}`. Carries the security filter. |
+| 2 | OneDrive → Create a Folder | Named `{{1.folderName}}`, inside `Master Folder/Clients`. Carries the security filter. |
 | 3 | OneDrive → Upload a File | `{{1.businessName}} — onboarding brief.md`, content `{{1.brief}}`, into the folder module 2 just made. |
+
+Result: `Master Folder/Clients/<Business Name>/<Business Name> — onboarding brief.md`,
+sitting alongside the existing client folders.
 
 **The filter on module 2 is the only thing protecting the webhook.** It compares
 `{{1.secret}}` against the shared secret; anything else stops there. The secret
@@ -66,14 +69,24 @@ The OneDrive connection is Microsoft OAuth as `Simon@clinicevolution.com`. Note
 that connections can only be created **from inside a scenario module** in the
 current Make UI — the Connections settings page has no add button.
 
-### Known rough edge
+### About the drive target
 
-Folders are created in the **root of Simon's OneDrive**, not in Danny's
-`Master Folder/Clients` where the existing client folders live. Make's "My
-Drive" means the connected user's own drive. To change it, open module 2 and
-pick a different Folder — or move client records to a SharePoint team site and
-repoint both OneDrive modules at it, which is the better long-term home since it
-does not depend on one person's account.
+`Master Folder` lives in **Danny's** OneDrive, not Simon's, so modules 2 and 3
+address it by explicit Drive ID rather than using Make's "My Drive" default:
+
+```
+drive   b!GxTpz6BN9E-Jkr1Y1bkw4HWbs_1bOmBIot-suIe2ccpcWMTHWzSbRY7zjuKfRCSQ
+folder  012VJQ5BNXT3XKYBCQ45CYSXNWKIDQ3PGQ      (Master Folder/Clients)
+```
+
+Module 3 takes its drive from `{{2.parentReference.driveId}}` so it always
+follows wherever module 2 wrote, rather than repeating the hard-coded ID.
+
+This works because Danny shares that folder with Simon and the connection is
+Simon's. **It therefore depends on two people's accounts** — if either changes,
+or Danny unshares, submissions fail. Moving client records to a SharePoint team
+site and repointing both modules there would remove that dependency, and is the
+better long-term home.
 
 ### Not built yet
 
