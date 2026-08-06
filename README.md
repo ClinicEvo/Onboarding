@@ -108,9 +108,10 @@ and is the better long-term home.
 
 ### The notification, and its error handler
 
-Module 4 emails `Simon@clinicevolution.com` on every submission — business name,
-type, contact, where it filed, and a link straight to the brief. Because it is
-sent from Simon to Simon it lands in both Inbox and Sent Items, which is normal.
+Module 4 emails `Simon@clinicevolution.com` on every submission, CC'ing
+`danny@clinicevolution.com` — business name, type, contact, where it filed, and
+a link straight to the brief. Because it is sent from Simon to Simon it lands in
+both Inbox and Sent Items, which is normal.
 
 **Module 4 has an `Ignore` error handler and that is deliberate.** A failing
 notification must never cost a submission: without it, a mail error aborts the
