@@ -30,88 +30,68 @@ Client fills form
 POST /api/submit          validates, renders the brief, adds the shared secret
       │
       ▼
-Make webhook              rejects anything without the secret
+Make webhook              filter rejects anything with the wrong secret
       │
-      ├─►  Drive: create /Clients/[Business Name]/
-      ├─►  Drive: create /Assets/ inside it
-      ├─►  Drive: write "Onboarding brief" from the rendered Markdown
-      └─►  Notify you
+      ├─►  OneDrive: create a folder named after the business
+      └─►  OneDrive: write "<Business> — onboarding brief.md" inside it
 ```
 
 The Make webhook URL never reaches the browser. If it did, anyone could read it
-out of the page source and post junk straight into your Drive.
+out of the page source and post junk straight into the Drive.
 
 ---
 
-## Setting up the Make scenario
+## The Make scenario
 
-**1. Webhooks → Custom webhook**
+Already built and running — **Clinic Evo — onboarding submissions**, scenario
+`9627307` in Make team 297679 (`eu2.make.com`). Three modules:
 
-Add the module, click *Add*, name it `onboarding`, and copy the URL it gives you.
+| # | Module | What it does |
+| --- | --- | --- |
+| 1 | Custom webhook | Receives the submission. Hook `4302421`. |
+| 2 | OneDrive → Create a Folder | Named `{{1.folderName}}`. Carries the security filter. |
+| 3 | OneDrive → Upload a File | `{{1.businessName}} — onboarding brief.md`, content `{{1.brief}}`, into the folder module 2 just made. |
 
-**2. Add a filter immediately after the webhook**
+**The filter on module 2 is the only thing protecting the webhook.** It compares
+`{{1.secret}}` against the shared secret; anything else stops there. The secret
+travels in the request body rather than a header because Make matches body
+fields far more reliably than hyphenated header names — equally private either
+way over HTTPS.
 
-Right-click the connector after the webhook and add a filter:
+The `brief` field arrives as fully-formatted Markdown, assembled in
+`lib/brief.ts`. There is no template document to maintain and no placeholder
+mapping to keep in sync with the questions.
 
-| Setting | Value |
-| --- | --- |
-| Condition | `{{1.headers.x-onboarding-secret}}` |
-| Operator | Text: Equal to |
-| Value | your `MAKE_WEBHOOK_SECRET` |
+The OneDrive connection is Microsoft OAuth as `Simon@clinicevolution.com`. Note
+that connections can only be created **from inside a scenario module** in the
+current Make UI — the Connections settings page has no add button.
 
-Without this filter, anyone who discovers the webhook URL can write into your
-Drive. It is the only thing protecting it.
+### Known rough edge
 
-**3. Google Drive → Create a Folder**
+Folders are created in the **root of Simon's OneDrive**, not in Danny's
+`Master Folder/Clients` where the existing client folders live. Make's "My
+Drive" means the connected user's own drive. To change it, open module 2 and
+pick a different Folder — or move client records to a SharePoint team site and
+repoint both OneDrive modules at it, which is the better long-term home since it
+does not depend on one person's account.
 
-| Setting | Value |
-| --- | --- |
-| Folder name | `{{1.folderName}}` |
-| Parent folder | your `Clients` folder |
+### Not built yet
 
-**4. Google Drive → Create a Folder** (second one)
-
-| Setting | Value |
-| --- | --- |
-| Folder name | `Assets` |
-| Parent folder | the folder ID from step 3 |
-
-**5. Google Docs → Create a Document**
-
-| Setting | Value |
-| --- | --- |
-| Name | `{{1.businessName}} — onboarding brief` |
-| Content | `{{1.brief}}` |
-| Destination folder | the folder ID from step 3 |
-
-The `brief` field arrives as formatted Markdown, already assembled. There is no
-template document to maintain and no placeholder mapping to keep in sync with
-the questions — that logic lives in `lib/brief.ts`.
-
-**6. Notify yourself**
-
-Email, Slack or Teams — whichever you actually read. Useful fields:
-
-- `{{1.businessName}}`
-- `{{1.businessType}}`
-- `{{1.contactEmail}}`
-- a link to the Drive folder from step 3
-
-**7. Send a test**
-
-Run the scenario once so it listens, then submit the form locally. Make will
-capture the payload and show you the field structure.
+No notification step. Add an Email, Slack or Teams module after module 3 if you
+want a ping on submission — `{{1.businessName}}`, `{{1.businessType}}`,
+`{{1.contactEmail}}` and `{{3.webUrl}}` are the useful fields.
 
 ---
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local`:
+Copy `.env.example` to `.env.local` for local work; both are already set in
+Vercel for the deployed site.
 
 | Variable | What it is |
 | --- | --- |
-| `MAKE_WEBHOOK_URL` | The URL from step 1 |
-| `MAKE_WEBHOOK_SECRET` | Any long random string — `openssl rand -hex 32` |
+| `MAKE_WEBHOOK_URL` | The custom webhook's URL from Make |
+| `MAKE_WEBHOOK_SECRET` | Long random string — `openssl rand -hex 32`. Must match the filter on module 2. |
 
 Neither is prefixed `NEXT_PUBLIC_`, so neither reaches the browser. Set both in
 Vercel's project settings for the deployed version.
