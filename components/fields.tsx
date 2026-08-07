@@ -228,6 +228,17 @@ export function AccessGrid({
                 <p className="max-w-[58ch] text-[0.8125rem] leading-relaxed text-muted">
                   {item.how}
                 </p>
+                {/* Rows that go to a different address have to say so, or the
+                    client will invite the one at the top of the page. */}
+                {item.grantTo && (
+                  <p className="mt-1 max-w-[58ch] text-[0.8125rem] leading-relaxed text-ink">
+                    Send this one to{" "}
+                    <span className="font-semibold text-accent">
+                      {item.grantTo}
+                    </span>{" "}
+                    — not the address above.
+                  </p>
+                )}
               </div>
 
               <div

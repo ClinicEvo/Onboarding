@@ -1,7 +1,7 @@
 import {
   STEPS,
-  ACCESS_ITEMS,
   visibleFields,
+  visibleAccessItems,
   type Values,
 } from "./schema";
 
@@ -73,8 +73,10 @@ export function renderBrief(
   lines.push("## Access status");
   lines.push("");
 
-  const grantEntries = ACCESS_ITEMS.map((item) => ({
-    label: item.label,
+  // Only the rows this client was actually shown — listing ad platforms as
+  // "Not answered" for someone who does not run ads is just noise.
+  const grantEntries = visibleAccessItems(values).map((item) => ({
+    label: item.grantTo ? `${item.label} (to ${item.grantTo})` : item.label,
     status: accessGrants[item.id] || "Not answered",
   }));
 
@@ -84,6 +86,13 @@ export function renderBrief(
     lines.push(`| ${label} | ${status} |`);
   }
   lines.push("");
+
+  if (values.adAccounts === "No, and we would like help setting them up") {
+    lines.push(
+      "**They want help setting up ad accounts.** No ad platform access was requested for that reason.",
+    );
+    lines.push("");
+  }
 
   const blocking = grantEntries.filter(
     (g) => g.status === "Will do" || g.status === "Need help",

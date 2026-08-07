@@ -79,7 +79,22 @@ export interface AccessItem {
   label: string;
   how: string;
   appliesTo?: BusinessType[];
+  /**
+   * Grant this one to a specific address instead of the email given at the top
+   * of the access step. The ad platforms go to Danny rather than the studio
+   * address, so the row has to say so or the client will invite the wrong one.
+   */
+  grantTo?: string;
+  showIf?: (v: Values) => boolean;
 }
+
+/** Where ad platform access has to be sent. */
+const ADS_EMAIL = "dmorgan18@googlemail.com";
+
+const HAS_AD_ACCOUNTS = "Yes, they are already set up";
+
+/** Ad platform rows only apply when the client actually has ad accounts. */
+const runsAds = (v: Values) => v.adAccounts === HAS_AD_ACCOUNTS;
 
 export const ACCESS_ITEMS: AccessItem[] = [
   {
@@ -114,8 +129,34 @@ export const ACCESS_ITEMS: AccessItem[] = [
   },
   {
     id: "meta",
-    label: "Facebook and Instagram",
-    how: "Meta Business Suite, Settings, People, invite our email with Content access.",
+    label: "Facebook and Instagram pages",
+    how: "Meta Business Suite, Settings, People, invite our email with Content access. This covers your pages — ad accounts are separate, further down.",
+  },
+  {
+    id: "gtm",
+    label: "Google Tag Manager",
+    how: "Admin, User Management, the + button, Add users, then give Publish permission on the container. If you have never heard of Tag Manager you almost certainly do not have one — mark it Do not have and we will set it up.",
+  },
+  {
+    id: "google-ads",
+    label: "Google Ads",
+    how: "Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that has to be accepted, so it will not show as active straight away.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
+  },
+  {
+    id: "meta-ads",
+    label: "Meta Ads account",
+    how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then turn on Manage campaigns. This is separate from page access above — granting one does not grant the other.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
+  },
+  {
+    id: "tiktok-ads",
+    label: "TikTok Ads",
+    how: "TikTok Ads Manager, Assets, Users, Invite, and choose Admin.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
   },
   {
     id: "booking",
@@ -522,7 +563,24 @@ export const STEPS: Step[] = [
         required: true,
         help: "Use ours if we have given you one, otherwise leave your own and we will confirm.",
       },
+      {
+        id: "adAccounts",
+        label: "Do you run paid ads?",
+        type: "radio",
+        options: [
+          HAS_AD_ACCOUNTS,
+          "No, and we would like help setting them up",
+          "No, and we are not planning to",
+        ],
+        help: "Google Ads, Meta, TikTok. Say no if you are unsure — plenty of clinics have an account someone set up years ago and never used, and we would rather start clean than inherit that.",
+      },
       { id: "accessGrants", label: "Access checklist", type: "access" },
+      {
+        id: "patientPulseEmail",
+        label: "Which email should we send Patient Pulse access to?",
+        type: "email",
+        help: "This one is the other way round — we send you the invitation. Use whichever address the person running day-to-day follow-up will actually read.",
+      },
       {
         id: "secretLink",
         label: "One-time link for anything that cannot be shared by invite",
@@ -581,10 +639,14 @@ export function visibleFields(step: Step, values: Values): Field[] {
   return step.fields.filter((f) => !f.showIf || f.showIf(values));
 }
 
-/** Access rows that apply to the chosen business type. */
+/** Access rows that apply to this client's business type and answers. */
 export function visibleAccessItems(values: Values): AccessItem[] {
   const t = values.businessType as BusinessType;
-  return ACCESS_ITEMS.filter((i) => !i.appliesTo || !t || i.appliesTo.includes(t));
+  return ACCESS_ITEMS.filter(
+    (i) =>
+      (!i.appliesTo || !t || i.appliesTo.includes(t)) &&
+      (!i.showIf || i.showIf(values)),
+  );
 }
 
 export const ACCESS_STATUSES = ["Granted", "Will do", "Do not have", "Need help"] as const;
