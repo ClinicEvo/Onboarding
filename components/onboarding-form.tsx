@@ -15,7 +15,6 @@ import { WarningIcon } from "@phosphor-icons/react/dist/csr/Warning";
 
 import {
   STEPS,
-  ACCESS_STEP,
   visibleFields,
   visibleAccessItems,
   type Field,
@@ -23,9 +22,9 @@ import {
 } from "@/lib/schema";
 import { AccessGrid, CheckboxGroup, RadioGroup, TextField } from "./fields";
 
-/* Per-form key. Without this, a client who filled in onboarding would have
-   those answers restored into the access form weeks later. */
-const draftKey = (kind: string) => `clinicevo-draft-${kind}-v2`;
+/* Versioned so drafts saved against an older question set are not restored
+   into a form they no longer match. Bump when the questions change shape. */
+const DRAFT_KEY = "clinicevo-draft-v3";
 
 /* Canonical "have we hydrated yet" check: false on the server, true on the
    client, with nothing to subscribe to. */
@@ -108,7 +107,7 @@ function readDraft(key: string): Draft | null {
     return {
       values: parsed.values ?? {},
       grants: parsed.grants ?? {},
-      stepIndex: parsed.stepIndex ?? 0,
+      stepIndex: Math.min(parsed.stepIndex ?? 0, STEPS.length - 1),
     };
   } catch {
     /* Corrupt draft is not worth surfacing — start clean. */
@@ -117,28 +116,17 @@ function readDraft(key: string): Draft | null {
 }
 
 interface Props {
-  /**
-   * Which of the two forms to render.
-   *
-   * The steps are looked up here rather than passed in as a prop: they carry
-   * `showIf` functions, and functions cannot cross the server/client boundary,
-   * so a Server Component handing them over fails at runtime.
-   */
-  formKind: "onboarding" | "access";
   /** Per-client code from the URL. Empty when gating is off. */
   clientCode: string;
   /** Client name resolved from that code. Empty when gating is off. */
   clientName: string;
 }
 
-export default function OnboardingForm({
-  formKind,
-  clientCode,
-  clientName,
-}: Props) {
-  const steps = formKind === "access" ? [ACCESS_STEP] : STEPS;
-  const key = draftKey(formKind);
-  const [draft] = useState(() => readDraft(key));
+export default function OnboardingForm({ clientCode, clientName }: Props) {
+  // Steps are read here rather than passed from the page: they carry `showIf`
+  // functions, which cannot cross the server/client component boundary.
+  const steps = STEPS;
+  const [draft] = useState(() => readDraft(DRAFT_KEY));
   const [stepIndex, setStepIndex] = useState(draft?.stepIndex ?? 0);
   // Prefill the business name when we already know who this is — one less
   // thing to type, and it shows the client the link was meant for them.
@@ -172,10 +160,10 @@ export default function OnboardingForm({
   useEffect(() => {
     if (!hydrated || status === "done") return;
     localStorage.setItem(
-      key,
+      DRAFT_KEY,
       JSON.stringify({ values, grants, stepIndex }),
     );
-  }, [values, grants, stepIndex, hydrated, status, key]);
+  }, [values, grants, stepIndex, hydrated, status]);
 
   const setValue = useCallback((id: string, value: string | string[]) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -225,7 +213,6 @@ export default function OnboardingForm({
           values,
           accessGrants: grants,
           clientCode,
-          formKind,
           submittedAt: new Date().toISOString(),
         }),
       });
@@ -233,7 +220,7 @@ export default function OnboardingForm({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? `Server responded ${res.status}`);
       }
-      localStorage.removeItem(key);
+      localStorage.removeItem(DRAFT_KEY);
       setStatus("done");
       focusHeading();
     } catch (err) {
@@ -285,42 +272,25 @@ export default function OnboardingForm({
         >
           That is everything.
         </h1>
-        {formKind === "onboarding" ? (
-          <>
-            <p className="mt-4 max-w-[62ch] text-lg text-muted">
-              That is enough for us to get started. We will go away and look
-              properly at your website, your search presence and who you are up
-              against locally.
-            </p>
-            <div className="mt-8 border-l-2 border-accent pl-4">
-              <p className="font-display text-[0.9375rem] font-semibold text-ink">
-                What happens next
-              </p>
-              <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
-                We will be in touch within two working days to book your kickoff
-                call. By then we will have done our homework, so that call is
-                about what we have found rather than more questions for you.
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="mt-4 max-w-[62ch] text-lg text-muted">
-              Thank you — we have been notified and will start connecting things
-              up.
-            </p>
-            <div className="mt-8 border-l-2 border-accent pl-4">
-              <p className="font-display text-[0.9375rem] font-semibold text-ink">
-                Anything you were unsure about
-              </p>
-              <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
-                We will pick those up with you directly. Nothing you marked{" "}
-                <span className="text-ink">Not sure</span> needs any more work
-                from you.
-              </p>
-            </div>
-          </>
-        )}
+        <p className="mt-4 max-w-[62ch] text-lg text-muted">
+          That is enough for us to get started. We will go away and look
+          properly at your website, your search presence and who you are up
+          against locally, then be in touch within two working days to book
+          your kickoff call.
+        </p>
+        <div className="mt-8 border-l-2 border-accent pl-4">
+          <p className="font-display text-[0.9375rem] font-semibold text-ink">
+            While you wait
+          </p>
+          <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
+            If you left any accounts as{" "}
+            <span className="text-ink">Will do</span>, working through those
+            invitations now is the single most useful thing you can do — access
+            is the usual reason a build sits waiting. Anything marked{" "}
+            <span className="text-ink">Not sure</span> needs nothing more from
+            you; we will pick it up together.
+          </p>
+        </div>
       </motion.div>
     );
   }

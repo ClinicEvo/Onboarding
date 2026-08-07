@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { renderBrief, type FormKind } from "@/lib/brief";
+import { renderBrief } from "@/lib/brief";
 import { buildBriefDocxBase64, briefFilename } from "@/lib/docx";
 import { lookupClient } from "@/lib/clients";
 
@@ -15,7 +15,6 @@ const payloadSchema = z.object({
   values: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
   accessGrants: z.record(z.string(), z.string()),
   clientCode: z.string().optional(),
-  formKind: z.enum(["onboarding", "access"]).default("onboarding"),
   submittedAt: z.string(),
 });
 
@@ -41,15 +40,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unexpected form data." }, { status: 400 });
   }
 
-  const { values, accessGrants, clientCode, formKind, submittedAt } = result.data;
-  const kind: FormKind = formKind;
+  const { values, accessGrants, clientCode, submittedAt } = result.data;
 
   const businessName = String(values.businessName ?? "").trim();
-  // The access form asks who to invite rather than who to contact, so fall
-  // back to that — it is the only email address that form collects.
-  const contactEmail = String(
-    values.contactEmail ?? values.accessEmail ?? "",
-  ).trim();
+  const contactEmail = String(values.contactEmail ?? "").trim();
 
   if (!businessName || !contactEmail) {
     return Response.json(
@@ -96,9 +90,9 @@ export async function POST(request: Request) {
       );
     }
     console.log(
-      `[submit] MAKE_WEBHOOK_URL unset. ${kind} → ${folderName}\n`,
+      `[submit] MAKE_WEBHOOK_URL unset. Would file under: ${folderName}\n`,
     );
-    console.log(renderBrief(values, accessGrants, submittedAt, kind));
+    console.log(renderBrief(values, accessGrants, submittedAt));
     return Response.json({ ok: true, delivered: false });
   }
 
@@ -127,12 +121,11 @@ export async function POST(request: Request) {
           bytes before uploading, so what lands in Drive is a real .docx that
           opens and edits in Word rather than something Word has to guess at.
         */
-        briefDocx: await buildBriefDocxBase64(values, accessGrants, submittedAt, kind),
-        briefFilename: briefFilename(client ?? businessName, kind),
-        formKind: kind,
+        briefDocx: await buildBriefDocxBase64(values, accessGrants, submittedAt),
+        briefFilename: briefFilename(client ?? businessName),
         // Plain-text version kept alongside it — useful for anything that wants
         // to read the content without parsing a Word file.
-        brief: renderBrief(values, accessGrants, submittedAt, kind),
+        brief: renderBrief(values, accessGrants, submittedAt),
         values,
         accessGrants,
       }),

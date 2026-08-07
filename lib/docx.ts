@@ -11,8 +11,13 @@ import {
   WidthType,
 } from "docx";
 
-import { visibleFields, visibleAccessItems, type Values } from "./schema";
-import { stepsFor, type FormKind } from "./brief";
+import {
+  STEPS,
+  ADS_HELP_ANSWER,
+  visibleFields,
+  visibleAccessItems,
+  type Values,
+} from "./schema";
 
 /**
  * Builds the onboarding brief as a real Word document.
@@ -55,7 +60,6 @@ export function buildBriefDocx(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
-  kind: FormKind = "onboarding",
 ): Promise<Buffer> {
   const name = String(values.businessName ?? "Unnamed").trim();
   const children: (Paragraph | Table)[] = [];
@@ -70,7 +74,7 @@ export function buildBriefDocx(
       spacing: { after: 400 },
       children: [
         new TextRun({
-          text: `${kind === "access" ? "Account access" : "Onboarding brief"} · submitted ${new Date(submittedAt).toLocaleString(
+          text: `Onboarding brief · submitted ${new Date(submittedAt).toLocaleString(
             "en-GB",
             { dateStyle: "long", timeStyle: "short", timeZone: "Europe/London" },
           )}`,
@@ -81,7 +85,7 @@ export function buildBriefDocx(
     }),
   );
 
-  for (const step of stepsFor(kind)) {
+  for (const step of STEPS) {
     const fields = visibleFields(step, values).filter((f) => f.type !== "access");
 
     const answered = fields.filter((f) => {
@@ -131,8 +135,7 @@ export function buildBriefDocx(
     }
   }
 
-  /* Access gets a real table, and only on the access brief. */
-  if (kind === "access") {
+  /* Access gets a real table — it is the section that blocks the build. */
   children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
@@ -144,7 +147,7 @@ export function buildBriefDocx(
   );
 
   const rows = visibleAccessItems(values).map((item) => ({
-    label: item.grantTo ? `${item.label} (to ${item.grantTo})` : item.label,
+    label: `${item.label} (to ${item.grantTo})`,
     status: accessGrants[item.id] || "Not answered",
   }));
 
@@ -212,6 +215,22 @@ export function buildBriefDocx(
     );
   }
 
+  if (values.adAccounts === ADS_HELP_ANSWER) {
+    children.push(
+      new Paragraph({
+        spacing: { before: 160 },
+        children: [
+          new TextRun({
+            text: "They want help setting up ad accounts. No ad platform access was requested for that reason.",
+            bold: true,
+            size: 21,
+            color: INK,
+          }),
+        ],
+      }),
+    );
+  }
+
   if (values.secretLink) {
     children.push(
       new Paragraph({
@@ -227,11 +246,10 @@ export function buildBriefDocx(
       }),
     );
   }
-  }
 
   const doc = new Document({
     creator: "Clinic Evo onboarding",
-    title: `${name} — ${kind === "access" ? "account access" : "onboarding brief"}`,
+    title: `${name} — onboarding brief`,
     styles: {
       default: {
         document: { run: { font: "Aptos", size: 21, color: INK } },
@@ -255,18 +273,17 @@ export async function buildBriefDocxBase64(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
-  kind: FormKind = "onboarding",
 ): Promise<string> {
-  const buffer = await buildBriefDocx(values, accessGrants, submittedAt, kind);
+  const buffer = await buildBriefDocx(values, accessGrants, submittedAt);
   return Buffer.from(buffer).toString("base64");
 }
 
 /** Word-safe filename — same forbidden characters as the folder name. */
-export function briefFilename(businessName: string, kind: FormKind = "onboarding"): string {
+export function briefFilename(businessName: string): string {
   const safe = businessName
     .replace(/["*:<>?/\\|]/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 80);
-  return `${safe} — ${kind === "access" ? "account access" : "onboarding brief"}.docx`;
+  return `${safe} — onboarding brief.docx`;
 }

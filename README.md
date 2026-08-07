@@ -8,45 +8,35 @@ It collects **access grants, not passwords**. See [Why no password fields](#why-
 
 ---
 
-## Two forms, sent weeks apart
+## One form, four steps
 
-| | Route | When | Size |
-| --- | --- | --- | --- |
-| **Stage 1** | `/` | The day they sign | 16 questions, ~5 minutes |
-| **Stage 2** | `/access` | After the kickoff call | 8 questions + up to 14 accounts |
+| Step | What it asks |
+| --- | --- |
+| The basics | Name, type, contact, locations |
+| Your business | Services, commercial priorities, booking system, what to improve |
+| Your website | Current site, who looks after it, sites they like, photos, assets |
+| Access | Three filter questions, then only the accounts that apply |
 
-This split is the whole design, and it is worth not undoing.
+About ten minutes. The rule for what earns a place: **only ask what the client
+genuinely knows better than us** — their business, their taste, their accounts.
 
-An earlier version asked all of it at once: 57 questions across 8 steps, ending
-in a checklist of 14 accounts to audit. It failed for a reason that had nothing
-to do with the questions being wrong — they were, mostly, the right questions.
-It failed because it arrived at the wrong moment. A clinic owner who has just
-decided to hire you is at peak goodwill, and handing them an hour of homework
-converts "they are taking this off my plate" into "I have bought something and
-been given a to-do list."
+An earlier version asked 57 questions across 8 steps. Most were cut, not
+because they were bad questions but because they were our homework, not the
+client's: pages the site needs, features, competitor lists, brand adjectives.
+Recommending those is the job they are paying for. The one taste question that
+survived is *websites you like the look of* — nobody knows what a client finds
+beautiful except the client.
 
-So Stage 1 now asks only what cannot be researched and what is needed to begin.
-Everything else moved to one of two places:
+Everything cut lives in [`docs/questions.md`](docs/questions.md)'s companion —
+the master discovery checklist — and in the kickoff conversation, where answers
+are richer than textareas.
 
-- **Clinic Evo's own research.** Existing site, sitemap, rankings, competitors,
-  reviews, current tracking. Never ask a client for something you can find out
-  yourself — turning up to the kickoff already knowing their three main organic
-  competitors demonstrates more than any question could.
-- **The kickoff conversation.** Which patients they want more of, what they do
-  not want to be associated with, what success looks like in six months. These
-  answers are richer spoken than typed into a textarea, and they need a
-  back-and-forth that a form cannot have.
-
-The full set of everything that used to be asked survives in
-[`docs/questions.md`](docs/questions.md) as the master discovery checklist. It
-is an internal document now, not a customer-facing one — which is what it should
-have been from the start.
-
-Deliberately **not** asked any more: which pages they need, which features the
-site must have, adjectives describing the brand, sites they like and dislike,
-whether a budget was agreed, who is writing the content, their brand fonts.
-Recommending the information architecture is the job they are paying for; asking
-them to specify it is asking them to do it themselves.
+The access step softens the ask three ways: filter questions (ads, payments,
+newsletters) mean a typical clinic sees 8 accounts rather than 14; the neutral
+option is **Not sure — help me** rather than an admission of failure; and every
+row names exactly which email to invite —
+web rows go to `hi.neometa@gmail.com`, ad platforms to
+`dmorgan18@googlemail.com`.
 
 ---
 
@@ -66,23 +56,18 @@ a silent no-op.
 ## How it fits together
 
 ```
-Client fills either form
+Client fills the form
       │
       ▼
 POST /api/submit          validates, renders the brief, adds the shared secret
-                          (formKind decides which brief and which filename)
       │
       ▼
 Make webhook              filter rejects anything with the wrong secret
       │
       └─►  OneDrive: Master Folder/Clients/<Business>/
-                     ├── <Business> — onboarding brief.docx
-                     └── <Business> — account access.docx
+                     └── <Business> — onboarding brief.docx
                      (folder reused if it exists, created if not)
 ```
-
-Both forms file into the same client folder under different names, so the second
-submission never overwrites the first.
 
 The Make webhook URL never reaches the browser. If it did, anyone could read it
 out of the page source and post junk straight into the Drive.
@@ -296,8 +281,7 @@ no emoji.
 
 ## Editing the questions
 
-Everything the client is asked lives in `lib/schema.ts` — `STEPS` for Stage 1
-and `ACCESS_STEP` for Stage 2. The UI renders whatever it finds there, so adding
+Everything the client is asked lives in `lib/schema.ts`. The UI renders whatever it finds there, so adding
 a question means adding an object, with no component changes.
 
 **Before adding to Stage 1, ask whether it belongs there at all.** Could you find

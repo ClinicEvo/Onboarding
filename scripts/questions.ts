@@ -10,7 +10,6 @@
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import {
   STEPS,
-  ACCESS_STEP,
   ACCESS_ITEMS,
   BUSINESS_TYPES,
   ACCESS_STATUSES,
@@ -18,8 +17,7 @@ import {
   type AccessItem,
 } from "../lib/schema";
 
-/** Both forms, in the order a client meets them. */
-const ALL = [...STEPS, ACCESS_STEP];
+const ALL = STEPS;
 
 const TYPE_LABEL: Record<string, string> = {
   text: "Short text",
@@ -72,7 +70,7 @@ md.push(
 );
 md.push("");
 md.push(
-  `Two separate forms, sent weeks apart. **${STEPS[0].title}** goes out the day a client signs — ${STEPS[0].fields.length} questions, about five minutes. **${ACCESS_STEP.title}** goes out after the kickoff call, once there is enough trust to ask for logins.\n\nBusiness types: ${BUSINESS_TYPES.map((t) => `*${t}*`).join(", ")}.\n\nEverything deliberately left out of these forms lives in the master discovery checklist — those are questions for the kickoff conversation, or things Clinic Evo researches itself.`,
+  `One form, ${STEPS.length} steps, about ten minutes. The rule for what earned a place: only what the client knows better than us — their business, their taste, their accounts. Pages, features, structure and competitor analysis are our recommendations to make, not their homework.\n\nBusiness types: ${BUSINESS_TYPES.map((t) => `*${t}*`).join(", ")}.`,
 );
 md.push("");
 
@@ -253,10 +251,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.875em;
 h.push(`<div class="wrap">
 <p class="eyebrow">Clinic Evo onboarding</p>
 <h1>Every question we ask</h1>
-<p class="lede">Two forms, sent weeks apart. The short one goes out the day a client signs; the access one waits until after the kickoff call. Anything not here is either researched by us or discussed in the meeting.</p>
+<p class="lede">One form, about ten minutes. Only what the client knows better than us — their business, their taste, their accounts. Everything else is either researched by us or discussed in the kickoff.</p>
 <dl class="stats">
-  <div><dt>Day one</dt><dd>${STEPS[0].fields.length}</dd></div>
-  <div><dt>After kickoff</dt><dd>${ACCESS_STEP.fields.length - 1}</dd></div>
+  <div><dt>Steps</dt><dd>${STEPS.length}</dd></div>
+  <div><dt>Questions</dt><dd>${ALL.reduce((n, s) => n + s.fields.filter((f) => f.type !== "access").length, 0)}</dd></div>
   <div><dt>Accounts, at most</dt><dd>${ACCESS_ITEMS.length}</dd></div>
   <div><dt>Typical clinic sees</dt><dd>${ACCESS_ITEMS.filter((i) => !i.showIf).length}</dd></div>
 </dl>
@@ -325,5 +323,5 @@ writeFileSync("docs/questions.md", md.join("\n"));
 writeFileSync("docs/questions.html", h.join("\n"));
 
 console.log(
-  `docs/questions.md + docs/questions.html — stage 1: ${STEPS[0].fields.length} questions, access: ${ACCESS_STEP.fields.length - 1} plus up to ${ACCESS_ITEMS.length} accounts.`,
+  `docs/questions.md + docs/questions.html — ${STEPS.length} steps, ${ALL.reduce((n, s) => n + s.fields.filter((f) => f.type !== "access").length, 0)} questions, up to ${ACCESS_ITEMS.length} accounts.`,
 );

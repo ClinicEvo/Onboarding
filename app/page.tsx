@@ -2,7 +2,7 @@ import OnboardingForm from "@/components/onboarding-form";
 import { CheckYourLink, Header } from "@/components/page-shell";
 import { lookupClient } from "@/lib/clients";
 
-const LABEL = "Getting started · about five minutes";
+const LABEL = "Project onboarding · about ten minutes";
 
 export default async function Page({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
@@ -18,7 +18,6 @@ export default async function Page({ searchParams }: PageProps<"/">) {
     <main className="relative z-10 min-h-[100dvh]">
       <Header label={LABEL} />
       <OnboardingForm
-        formKind="onboarding"
         clientCode={code ?? ""}
         clientName={client ?? ""}
       />

@@ -1,22 +1,17 @@
 import {
   STEPS,
-  ACCESS_STEP,
+  ADS_HELP_ANSWER,
   visibleFields,
   visibleAccessItems,
   type Values,
 } from "./schema";
 
-export type FormKind = "onboarding" | "access";
-
-/** The two forms render from different step sets. */
-export const stepsFor = (kind: FormKind) =>
-  kind === "access" ? [ACCESS_STEP] : STEPS;
-
 /**
  * Renders a submission into a Markdown brief.
  *
- * This lives here rather than in the Make scenario so the formatting is
- * version-controlled and testable. Make just writes the string to a file.
+ * Nothing files this any more — the Word version in docx.ts is what lands in
+ * Drive — but it is what the local dev log prints, and far easier to eyeball
+ * than a Word file when checking a change to the question set.
  */
 
 function renderAnswer(value: string | string[]): string {
@@ -32,12 +27,11 @@ export function renderBrief(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
-  kind: FormKind = "onboarding",
 ): string {
   const lines: string[] = [];
   const name = String(values.businessName ?? "Unnamed").trim();
 
-  lines.push(`# ${name} — ${kind === "access" ? "account access" : "onboarding brief"}`);
+  lines.push(`# ${name} — onboarding brief`);
   lines.push("");
   lines.push(
     `Submitted ${new Date(submittedAt).toLocaleString("en-GB", {
@@ -48,7 +42,7 @@ export function renderBrief(
   );
   lines.push("");
 
-  for (const step of stepsFor(kind)) {
+  for (const step of STEPS) {
     const fields = visibleFields(step, values).filter(
       (f) => f.type !== "access",
     );
@@ -58,7 +52,7 @@ export function renderBrief(
       return Array.isArray(v) ? v.length > 0 : Boolean(v?.trim());
     });
 
-    if (answered.length === 0 && step.id !== "access") continue;
+    if (answered.length === 0) continue;
 
     lines.push(`## ${step.title}`);
     lines.push("");
@@ -77,8 +71,6 @@ export function renderBrief(
     }
   }
 
-  if (kind !== "access") return lines.join("\n");
-
   /* Access gets its own treatment — it is the section that blocks the build. */
   lines.push("## Access status");
   lines.push("");
@@ -86,7 +78,7 @@ export function renderBrief(
   // Only the rows this client was actually shown — listing ad platforms as
   // "Not answered" for someone who does not run ads is just noise.
   const grantEntries = visibleAccessItems(values).map((item) => ({
-    label: item.grantTo ? `${item.label} (to ${item.grantTo})` : item.label,
+    label: `${item.label} (to ${item.grantTo})`,
     status: accessGrants[item.id] || "Not answered",
   }));
 
@@ -105,6 +97,13 @@ export function renderBrief(
       `**Chase these:** ${blocking
         .map((g) => `${g.label} (${g.status})`)
         .join("; ")}`,
+    );
+    lines.push("");
+  }
+
+  if (values.adAccounts === ADS_HELP_ANSWER) {
+    lines.push(
+      "**They want help setting up ad accounts.** No ad platform access was requested for that reason.",
     );
     lines.push("");
   }
