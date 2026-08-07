@@ -1,19 +1,28 @@
 import Image from "next/image";
 
-/** Shared chrome for both forms — logo, and a line saying which one this is. */
-export function Header({ label }: { label: string }) {
+/**
+ * Shared chrome — logo, and a line saying what this is.
+ *
+ * `aside` is the duration estimate. It is dropped on narrow screens rather
+ * than allowed to wrap: two lines of grey text doubles the height of a sticky
+ * header, which costs more on a phone than the reassurance is worth.
+ */
+export function Header({ label, aside }: { label: string; aside?: string }) {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-paper/95">
-      <div className="mx-auto flex w-full max-w-[75rem] items-center justify-between gap-6 px-6 py-4 md:px-10">
+      <div className="mx-auto flex w-full max-w-[75rem] items-center justify-between gap-4 px-6 py-4 md:px-10">
         <Image
           src="/brand/cevo_newlogo.png"
           alt="Clinic Evo"
           width={2526}
           height={440}
           priority
-          className="h-6 w-auto md:h-7"
+          className="h-6 w-auto shrink-0 md:h-7"
         />
-        <p className="text-[0.8125rem] text-muted">{label}</p>
+        <p className="text-right text-[0.8125rem] text-balance text-muted">
+          {label}
+          {aside && <span className="hidden sm:inline"> · {aside}</span>}
+        </p>
       </div>
     </header>
   );

@@ -254,7 +254,10 @@ export function AccessGrid({
                       onClick={() =>
                         onChange({ ...value, [item.id]: on ? "" : status })
                       }
-                      className={`rounded-[4px] border px-2.5 py-1 text-[0.75rem] leading-relaxed whitespace-nowrap transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] ${
+                      // 44px tall on touch: these are the main thing a client
+                      // taps on the longest screen, and a 30px pill is a miss
+                      // waiting to happen. Back to pill height on pointer.
+                      className={`min-h-[44px] rounded-[4px] border px-3 text-[0.8125rem] leading-relaxed whitespace-nowrap transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] md:min-h-0 md:px-2.5 md:py-1 md:text-[0.75rem] ${
                         on
                           ? "border-accent bg-accent text-paper"
                           : "border-line text-muted hover:border-muted hover:text-ink"
