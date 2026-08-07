@@ -1,9 +1,16 @@
 import {
   STEPS,
+  ACCESS_STEP,
   visibleFields,
   visibleAccessItems,
   type Values,
 } from "./schema";
+
+export type FormKind = "onboarding" | "access";
+
+/** The two forms render from different step sets. */
+export const stepsFor = (kind: FormKind) =>
+  kind === "access" ? [ACCESS_STEP] : STEPS;
 
 /**
  * Renders a submission into a Markdown brief.
@@ -25,11 +32,12 @@ export function renderBrief(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
+  kind: FormKind = "onboarding",
 ): string {
   const lines: string[] = [];
   const name = String(values.businessName ?? "Unnamed").trim();
 
-  lines.push(`# ${name} — onboarding brief`);
+  lines.push(`# ${name} — ${kind === "access" ? "account access" : "onboarding brief"}`);
   lines.push("");
   lines.push(
     `Submitted ${new Date(submittedAt).toLocaleString("en-GB", {
@@ -40,7 +48,7 @@ export function renderBrief(
   );
   lines.push("");
 
-  for (const step of STEPS) {
+  for (const step of stepsFor(kind)) {
     const fields = visibleFields(step, values).filter(
       (f) => f.type !== "access",
     );
@@ -69,6 +77,8 @@ export function renderBrief(
     }
   }
 
+  if (kind !== "access") return lines.join("\n");
+
   /* Access gets its own treatment — it is the section that blocks the build. */
   lines.push("## Access status");
   lines.push("");
@@ -87,15 +97,8 @@ export function renderBrief(
   }
   lines.push("");
 
-  if (values.adAccounts === "No, and we would like help setting them up") {
-    lines.push(
-      "**They want help setting up ad accounts.** No ad platform access was requested for that reason.",
-    );
-    lines.push("");
-  }
-
   const blocking = grantEntries.filter(
-    (g) => g.status === "Will do" || g.status === "Need help",
+    (g) => g.status === "Will do" || g.status === "Not sure — help me",
   );
   if (blocking.length > 0) {
     lines.push(

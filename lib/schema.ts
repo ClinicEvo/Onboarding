@@ -1,12 +1,17 @@
 /**
  * The onboarding question set.
  *
- * This file is the single source of truth for what the client is asked.
- * Edit here to change the form — the UI renders whatever it finds.
+ * Two separate forms, sent weeks apart:
+ *
+ * - `STEPS` is Stage 1, sent the day a client signs. Deliberately short. It
+ *   asks only what cannot be researched and what is needed to start; anything
+ *   Clinic Evo can find out for itself, or should be discussing in the kickoff
+ *   call, is not here. The full discovery checklist lives in docs/ instead.
+ * - `ACCESS_STEP` is Stage 2, sent after the kickoff, once there is enough
+ *   trust to ask for logins.
  *
  * `showIf` receives the current answers and returns whether to render the
- * field. Use it to keep clinics from being asked about class timetables and
- * personal trainers from being asked about insurers.
+ * field. Used to keep the access list down to what each client actually has.
  */
 
 export type BusinessType =
@@ -24,22 +29,7 @@ export const BUSINESS_TYPES: BusinessType[] = [
   "Something else",
 ];
 
-/** Types where the practitioner is likely to be statutorily regulated. */
-const CLINICAL: BusinessType[] = [
-  "Clinic or multi-practitioner practice",
-  "Solo practitioner",
-];
-
-/** Types built around sessions, programmes and classes rather than appointments. */
-const COACHING: BusinessType[] = [
-  "Personal trainer or coach",
-  "Gym, studio or class-based",
-];
-
 export type Values = Record<string, string | string[]>;
-
-const is = (v: Values, list: BusinessType[]) =>
-  list.includes(v.businessType as BusinessType);
 
 export type FieldType =
   | "text"
@@ -70,116 +60,14 @@ export interface Step {
   fields: Field[];
 }
 
-/**
- * Access items the client is asked to *grant*, not to send passwords for.
- * `appliesTo` narrows the list by business type; omit it to always show.
- */
-export interface AccessItem {
-  id: string;
-  label: string;
-  how: string;
-  appliesTo?: BusinessType[];
-  /**
-   * Grant this one to a specific address instead of the email given at the top
-   * of the access step. The ad platforms go to Danny rather than the studio
-   * address, so the row has to say so or the client will invite the wrong one.
-   */
-  grantTo?: string;
-  showIf?: (v: Values) => boolean;
-}
-
-/** Where ad platform access has to be sent. */
-const ADS_EMAIL = "dmorgan18@googlemail.com";
-
-const HAS_AD_ACCOUNTS = "Yes, they are already set up";
-
-/** Ad platform rows only apply when the client actually has ad accounts. */
-const runsAds = (v: Values) => v.adAccounts === HAS_AD_ACCOUNTS;
-
-export const ACCESS_ITEMS: AccessItem[] = [
-  {
-    id: "registrar",
-    label: "Domain registrar",
-    how: "Invite us as a user, or move the domain into your own account and add us. GoDaddy, 123-reg, Namecheap and Cloudflare all support this.",
-  },
-  {
-    id: "hosting",
-    label: "Web hosting",
-    how: "Most hosts allow a second login or sub-account. If yours does not, use the one-time link at the bottom of this page.",
-  },
-  {
-    id: "website",
-    label: "Existing website admin",
-    how: "In WordPress: Users, Add New, set role to Administrator. Squarespace, Wix and Webflow have an equivalent invite.",
-  },
-  {
-    id: "gbp",
-    label: "Google Business Profile",
-    how: "Business Profile, Settings, People and access, Add, then choose Manager.",
-  },
-  {
-    id: "ga4",
-    label: "Google Analytics",
-    how: "Admin, Property access management, add our email as Editor.",
-  },
-  {
-    id: "gsc",
-    label: "Google Search Console",
-    how: "Settings, Users and permissions, Add user, Full.",
-  },
-  {
-    id: "meta",
-    label: "Facebook and Instagram pages",
-    how: "Meta Business Suite, Settings, People, invite our email with Content access. This covers your pages — ad accounts are separate, further down.",
-  },
-  {
-    id: "gtm",
-    label: "Google Tag Manager",
-    how: "Admin, User Management, the + button, Add users, then give Publish permission on the container. If you have never heard of Tag Manager you almost certainly do not have one — mark it Do not have and we will set it up.",
-  },
-  {
-    id: "google-ads",
-    label: "Google Ads",
-    how: "Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that has to be accepted, so it will not show as active straight away.",
-    grantTo: ADS_EMAIL,
-    showIf: runsAds,
-  },
-  {
-    id: "meta-ads",
-    label: "Meta Ads account",
-    how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then turn on Manage campaigns. This is separate from page access above — granting one does not grant the other.",
-    grantTo: ADS_EMAIL,
-    showIf: runsAds,
-  },
-  {
-    id: "tiktok-ads",
-    label: "TikTok Ads",
-    how: "TikTok Ads Manager, Assets, Users, Invite, and choose Admin.",
-    grantTo: ADS_EMAIL,
-    showIf: runsAds,
-  },
-  {
-    id: "booking",
-    label: "Booking system",
-    how: "Add us as a staff or admin user so we can wire the booking flow into the new site.",
-  },
-  {
-    id: "email",
-    label: "Email marketing",
-    how: "Mailchimp, Klaviyo, Brevo and similar all support inviting a second user.",
-  },
-  {
-    id: "payments",
-    label: "Payments",
-    how: "Stripe, Settings, Team, invite as Developer. Only needed if the site takes payment.",
-  },
-];
+/* ------------------------------------------------ Stage 1: the short form */
 
 export const STEPS: Step[] = [
   {
-    id: "basics",
-    title: "The basics",
-    blurb: "Who you are and how we reach you. Everything after this adapts to what you pick here.",
+    id: "start",
+    title: "Tell us about your clinic",
+    blurb:
+      "Enough for us to get started — about five minutes. We will research the rest ourselves and go through it with you on the kickoff call.",
     fields: [
       {
         id: "businessName",
@@ -194,180 +82,42 @@ export const STEPS: Step[] = [
         type: "radio",
         required: true,
         options: BUSINESS_TYPES,
-        help: "This changes which questions you get asked, so it is worth getting right.",
-      },
-      {
-        id: "businessTypeOther",
-        label: "Tell us what you do",
-        type: "text",
-        showIf: (v) => v.businessType === "Something else",
       },
       { id: "contactName", label: "Main contact", type: "text", required: true },
       { id: "contactEmail", label: "Email", type: "email", required: true },
       { id: "contactPhone", label: "Phone", type: "tel" },
       {
+        id: "existingSite",
+        label: "Your current website",
+        type: "url",
+        placeholder: "https://",
+        help: "If you have one. We will review it before we speak.",
+      },
+      {
         id: "locations",
         label: "Where do you operate?",
         type: "textarea",
         rows: 3,
-        help: "Full address for each location, or say online only. Include parking and access notes if they matter to your clients.",
+        help: "Full address for each location, or say online only.",
       },
-      {
-        id: "hours",
-        label: "Opening hours",
-        type: "textarea",
-        rows: 3,
-        help: "Per location if they differ.",
-      },
-      { id: "yearsTrading", label: "How long have you been trading?", type: "text" },
-    ],
-  },
-
-  {
-    id: "offer",
-    title: "What you do",
-    blurb: "The services themselves. Be specific — this is the raw material for most of the page copy.",
-    fields: [
       {
         id: "services",
-        label: "Your main services and what they cost",
+        label: "What services do you offer?",
         type: "textarea",
         required: true,
-        rows: 6,
-        help: "One per line with a price or price range. If pricing varies, say how.",
+        rows: 5,
+        help: "A list is fine. Prices too if they are straightforward.",
       },
       {
-        id: "whoYouHelp",
-        label: "Who is your ideal client?",
-        type: "textarea",
-        rows: 4,
-        help: "Age, situation, what brought them to you. The more specific, the better the copy.",
-      },
-      {
-        id: "conditions",
-        label: "Conditions you commonly treat",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => is(v, CLINICAL),
-        help: "These often become individual pages, so list the ones you actually want to be found for.",
-      },
-      {
-        id: "insurers",
-        label: "Insurers you accept",
-        type: "textarea",
-        rows: 2,
-        showIf: (v) => is(v, CLINICAL),
-        help: "Bupa, AXA, Vitality, Aviva and so on. Include any registration numbers they issued you.",
-      },
-      {
-        id: "delivery",
-        label: "How do you deliver sessions?",
-        type: "radio",
-        options: ["In person only", "Online only", "Both in person and online"],
-        showIf: (v) => is(v, COACHING),
-      },
-      {
-        id: "packages",
-        label: "Packages and programmes",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => v.businessType === "Personal trainer or coach",
-        help: "Block bookings, 12-week programmes, nutrition add-ons, whatever you sell beyond single sessions.",
-      },
-      {
-        id: "timetable",
-        label: "Class timetable",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => v.businessType === "Gym, studio or class-based",
-        help: "Paste it in, or link to where it currently lives. Tell us how often it changes.",
-      },
-      {
-        id: "membership",
-        label: "Membership tiers",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => v.businessType === "Gym, studio or class-based",
-        help: "What each tier includes, contract length, joining fees.",
-      },
-    ],
-  },
-
-  {
-    id: "people",
-    title: "Your people",
-    blurb: "Who works with you. Credentials matter here — for trust, and in some cases for compliance.",
-    fields: [
-      {
-        id: "practitioners",
-        label: "Who works in the business?",
-        type: "textarea",
-        rows: 6,
-        help: "Name, role, and a line or two about them. Include yourself.",
-      },
-      {
-        id: "registrations",
-        label: "Professional registrations",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => is(v, CLINICAL),
-        help: "GOsC, HCPC, CSP, GCC, BAcC and similar, with registration numbers. These usually have to be displayed, so we need them exactly right.",
-      },
-      {
-        id: "certifications",
-        label: "Qualifications and certifications",
-        type: "textarea",
-        rows: 4,
-        showIf: (v) => is(v, COACHING),
-        help: "CIMSPA, REPs, governing body awards, first aid, plus your public liability insurer.",
-      },
-      {
-        id: "hiring",
-        label: "Are you hiring?",
-        type: "radio",
-        options: ["Yes, and we want a careers page", "Not right now", "Maybe later"],
-      },
-    ],
-  },
-
-  {
-    id: "current",
-    title: "Where you are now",
-    blurb: "Your current setup. We need to know what exists before we can plan what replaces it.",
-    fields: [
-      { id: "existingSite", label: "Current website", type: "url", placeholder: "https://" },
-      {
-        id: "siteLikes",
-        label: "What works about it?",
+        id: "priorityServices",
+        label: "Which of those matter most commercially?",
         type: "textarea",
         rows: 3,
-        showIf: (v) => Boolean(v.existingSite),
+        help: "The ones you would most like more of — because of margin, capacity, or because you enjoy the work.",
       },
-      {
-        id: "siteDislikes",
-        label: "What does not?",
-        type: "textarea",
-        rows: 3,
-        showIf: (v) => Boolean(v.existingSite),
-      },
-      {
-        id: "keepContent",
-        label: "Should we carry the existing content over?",
-        type: "radio",
-        options: ["Keep most of it", "Keep some, rewrite the rest", "Start fresh", "Not sure yet"],
-        showIf: (v) => Boolean(v.existingSite),
-      },
-      { id: "domain", label: "Domain name", type: "text", placeholder: "yourpractice.co.uk" },
-      {
-        id: "registrar",
-        label: "Who is the domain registered with?",
-        type: "text",
-        help: "GoDaddy, 123-reg, Namecheap, or whoever set it up for you. If you have no idea, say so.",
-      },
-      { id: "host", label: "Who hosts the current site?", type: "text" },
       {
         id: "bookingSystem",
-        label: "Booking system",
+        label: "How do patients book?",
         type: "radio",
         options: [
           "Cliniko",
@@ -390,263 +140,227 @@ export const STEPS: Step[] = [
         showIf: (v) => v.bookingSystem === "Other",
       },
       {
-        id: "social",
-        label: "Social profiles",
+        id: "improve",
+        label: "What would you most like us to improve?",
         type: "textarea",
-        rows: 3,
-        help: "Links to everything you actively use.",
-      },
-      {
-        id: "reviews",
-        label: "Where do your reviews live?",
-        type: "textarea",
-        rows: 2,
-        help: "Google, Trustpilot, Facebook, Doctify. We can usually pull these onto the site.",
-      },
-    ],
-  },
-
-  {
-    id: "goals",
-    title: "The new site",
-    blurb: "What it needs to achieve, and what it should feel like.",
-    fields: [
-      {
-        id: "primaryGoal",
-        label: "What is the single most important thing the new site must do?",
-        type: "radio",
         required: true,
-        options: [
-          "Get more bookings or enquiries",
-          "Look credible and established",
-          "Rank better in search",
-          "Sell products or programmes online",
-          "Replace something outdated and embarrassing",
-        ],
+        rows: 4,
+        help: "In your own words. The thing that made you pick up the phone.",
       },
       {
-        id: "successMetric",
-        label: "How will you know it worked?",
+        id: "incumbent",
+        label: "Is anyone currently looking after your website or marketing?",
         type: "textarea",
         rows: 3,
-        help: "A number if you have one. Twenty enquiries a month, a full timetable, whatever it is.",
+        help: "An agency, a freelancer, a family member who built it years ago. Worth knowing early — handovers take longer than the work itself.",
       },
       {
-        id: "pages",
-        label: "Pages you know you need",
-        type: "checkbox",
-        options: [
-          "Home",
-          "About",
-          "Services overview",
-          "Individual service pages",
-          "Conditions we treat",
-          "Meet the team",
-          "Pricing",
-          "Timetable",
-          "Book online",
-          "Contact",
-          "Blog or advice",
-          "FAQs",
-          "Testimonials",
-          "Shop",
-          "Careers",
-        ],
-      },
-      {
-        id: "features",
-        label: "Features it must have",
-        type: "checkbox",
-        options: [
-          "Online booking",
-          "Class timetable",
-          "Online payments",
-          "Member or client area",
-          "Gift vouchers",
-          "Blog",
-          "Newsletter signup",
-          "Live chat",
-          "Multi-location support",
-          "Intake forms",
-        ],
-      },
-      {
-        id: "sitesLiked",
-        label: "Sites you like",
+        id: "timing",
+        label: "Anything happening soon we should know about?",
         type: "textarea",
         rows: 3,
-        help: "Any industry, not just yours. Tell us what specifically you like about each.",
-      },
-      {
-        id: "sitesDisliked",
-        label: "Sites you dislike",
-        type: "textarea",
-        rows: 2,
-        help: "Genuinely useful. Knowing what to avoid saves a round of revisions.",
-      },
-      {
-        id: "competitors",
-        label: "Your main competitors",
-        type: "textarea",
-        rows: 3,
-        help: "Who else would your client be considering?",
-      },
-      {
-        id: "tone",
-        label: "How should it come across?",
-        type: "checkbox",
-        options: [
-          "Warm and reassuring",
-          "Clinical and precise",
-          "Premium",
-          "Energetic",
-          "Calm",
-          "No-nonsense",
-          "Down to earth",
-          "Playful",
-        ],
-        help: "Pick two or three. Picking everything tells us nothing.",
-      },
-    ],
-  },
-
-  {
-    id: "brand",
-    title: "Brand and assets",
-    blurb: "The raw materials. Missing assets are the most common reason a build stalls, so flag gaps now.",
-    fields: [
-      {
-        id: "logo",
-        label: "Do you have a logo?",
-        type: "radio",
-        options: [
-          "Yes, and I have the original vector files",
-          "Yes, but only as a JPG or PNG",
-          "No, we need one designed",
-        ],
-      },
-      { id: "brandColours", label: "Brand colours", type: "text", help: "Hex codes if you have them." },
-      { id: "brandFonts", label: "Brand fonts", type: "text" },
-      {
-        id: "photography",
-        label: "Photography",
-        type: "radio",
-        options: [
-          "Professional shots of the space and team",
-          "Decent phone photos",
-          "Nothing usable yet",
-          "We want to arrange a shoot",
-        ],
-        help: "Stock photography of models in gyms is the fastest way to look like everyone else. Real photos of your actual space are worth the effort.",
+        help: "A new practitioner starting, a location opening, a quiet season you want to fix before it arrives.",
       },
       {
         id: "assetsLink",
-        label: "Link to your assets",
+        label: "Your logo and photos",
         type: "url",
         placeholder: "https://",
-        help: "Drop your logo files, photos and any existing brand guidelines into Drive, Dropbox or WeTransfer and paste the share link here. Please make sure the link does not expire.",
+        help: "A Drive, Dropbox or WeTransfer link is easiest. If you would rather send them another way, or do not have much, leave this and we will sort it out together.",
       },
-      { id: "assetNotes", label: "Anything we should know about the assets?", type: "textarea", rows: 3 },
-    ],
-  },
-
-  {
-    id: "access",
-    title: "Access",
-    blurb:
-      "We do not want your passwords. Grant access to the email below instead — it is safer for you, it survives password changes, and you can revoke it the moment the project ends.",
-    fields: [
-      {
-        id: "accessEmail",
-        label: "Which email should we be granted access under?",
-        type: "email",
-        required: true,
-        help: "Use ours if we have given you one, otherwise leave your own and we will confirm.",
-      },
-      {
-        id: "adAccounts",
-        label: "Do you run paid ads?",
-        type: "radio",
-        options: [
-          HAS_AD_ACCOUNTS,
-          "No, and we would like help setting them up",
-          "No, and we are not planning to",
-        ],
-        help: "Google Ads, Meta, TikTok. Say no if you are unsure — plenty of clinics have an account someone set up years ago and never used, and we would rather start clean than inherit that.",
-      },
-      { id: "accessGrants", label: "Access checklist", type: "access" },
-      {
-        id: "patientPulseEmail",
-        label: "Which email should we send Patient Pulse access to?",
-        type: "email",
-        help: "This one is the other way round — we send you the invitation. Use whichever address the person running day-to-day follow-up will actually read.",
-      },
-      {
-        id: "secretLink",
-        label: "One-time link for anything that cannot be shared by invite",
-        type: "url",
-        placeholder: "https://onetimesecret.com/secret/...",
-        help: "Some older hosts have a single login and no way to add a second user. For those only: put the details into onetimesecret.com, set it to expire in 7 days, and paste the generated link here. Never type a password directly into this form.",
-      },
-      {
-        id: "accessNotes",
-        label: "Anything blocking you on access?",
-        type: "textarea",
-        rows: 3,
-        help: "Agency who will not hand over, ex-colleague who set it all up, forgotten accounts. Very common. Tell us and we will work around it.",
-      },
-    ],
-  },
-
-  {
-    id: "practical",
-    title: "Practicalities",
-    blurb: "Timings, decisions and anything else on your mind.",
-    fields: [
-      { id: "deadline", label: "Is there a date this needs to be live by?", type: "text", help: "And what happens on that date?" },
-      {
-        id: "budgetAgreed",
-        label: "Has a budget been agreed?",
-        type: "radio",
-        options: ["Yes, in the proposal", "Roughly", "Not yet"],
-      },
-      {
-        id: "decisionMakers",
-        label: "Who signs things off?",
-        type: "text",
-        help: "Everyone whose approval is needed before we can proceed. Naming them now avoids surprises at week six.",
-      },
-      {
-        id: "contentOwner",
-        label: "Who is writing the content?",
-        type: "radio",
-        options: ["You write it", "We write it", "A mix, and we will agree who does what"],
-      },
-      {
-        id: "compliance",
-        label: "Any claims or compliance points we should know about?",
-        type: "textarea",
-        rows: 4,
-        help: "Advertising rules are strict on health claims, so tell us about anything you currently say about results, cures or outcomes. Also mention any existing privacy policy or cookie setup.",
-      },
-      { id: "anythingElse", label: "Anything else?", type: "textarea", rows: 4 },
+      { id: "anythingElse", label: "Anything else we should know?", type: "textarea", rows: 4 },
     ],
   },
 ];
+
+/* --------------------------------------------- Stage 2: the access request */
+
+/** Where ad platform access has to be sent. */
+const ADS_EMAIL = "dmorgan18@googlemail.com";
+
+const YES = "Yes";
+
+const runsAds = (v: Values) => v.adAccounts === YES;
+const takesPayments = (v: Values) => v.onlinePayments === YES;
+const sendsNewsletters = (v: Values) => v.newsletters === YES;
+
+export interface AccessItem {
+  id: string;
+  label: string;
+  how: string;
+  /**
+   * Grant this one to a specific address instead of the email given at the top
+   * of the step. The ad platforms go to Danny rather than the studio address,
+   * so the row has to say so or the client will invite the wrong one.
+   */
+  grantTo?: string;
+  showIf?: (v: Values) => boolean;
+}
+
+export const ACCESS_ITEMS: AccessItem[] = [
+  {
+    id: "registrar",
+    label: "Your domain name",
+    how: "Whoever you bought the domain from — often GoDaddy, 123-reg or Namecheap. They all have a way to add a second person. If you are not sure who it is with, say so and we will find out.",
+  },
+  {
+    id: "hosting",
+    label: "Web hosting",
+    how: "The company the website actually sits on, which is sometimes the same as the domain. Most allow a second login.",
+  },
+  {
+    id: "website",
+    label: "Your website login",
+    how: "In WordPress: Users, Add New, set the role to Administrator. Squarespace, Wix and Webflow all have an equivalent invite.",
+  },
+  {
+    id: "gbp",
+    label: "Google Business Profile",
+    how: "The listing that shows on Google Maps. Business Profile, Settings, People and access, Add, then Manager.",
+  },
+  {
+    id: "ga4",
+    label: "Google Analytics",
+    how: "Admin, Property access management, add our email as Editor. Plenty of clinics do not have this set up — that is fine, we will create it.",
+  },
+  {
+    id: "gsc",
+    label: "Google Search Console",
+    how: "Settings, Users and permissions, Add user, Full. Same as above — if it does not exist we will set it up.",
+  },
+  {
+    id: "meta",
+    label: "Facebook and Instagram",
+    how: "Meta Business Suite, Settings, People, invite our email with Content access. This is your pages, not advertising.",
+  },
+  {
+    id: "booking",
+    label: "Booking system",
+    how: "Add us as a staff or admin user, so we can connect booking to the new site.",
+  },
+  {
+    id: "gtm",
+    label: "Google Tag Manager",
+    how: "Admin, User Management, the + button, then Publish permission. Only relevant if someone set this up for you previously.",
+    showIf: runsAds,
+  },
+  {
+    id: "google-ads",
+    label: "Google Ads",
+    how: "Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that needs accepting, so it will not show as active immediately.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
+  },
+  {
+    id: "meta-ads",
+    label: "Meta Ads account",
+    how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
+  },
+  {
+    id: "tiktok-ads",
+    label: "TikTok Ads",
+    how: "TikTok Ads Manager, Assets, Users, Invite, choose Admin.",
+    grantTo: ADS_EMAIL,
+    showIf: runsAds,
+  },
+  {
+    id: "email",
+    label: "Email marketing",
+    how: "Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.",
+    showIf: sendsNewsletters,
+  },
+  {
+    id: "payments",
+    label: "Payments",
+    how: "Stripe, Settings, Team, invite as Developer.",
+    showIf: takesPayments,
+  },
+];
+
+export const ACCESS_STATUSES = [
+  "Done",
+  "Will do",
+  "Do not have one",
+  "Not sure — help me",
+] as const;
+
+export const ACCESS_STEP: Step = {
+  id: "access",
+  title: "Connecting your accounts",
+  blurb:
+    "We now need to connect the accounts we will be working on. We are not asking for any passwords — you invite us in, and you can remove us at any time.",
+  fields: [
+    {
+      // Also what the brief gets filed under, so it is needed even though we
+      // usually know it already — prefilled from the client link when there
+      // is one.
+      id: "businessName",
+      label: "Business name",
+      type: "text",
+      required: true,
+    },
+    {
+      id: "accessEmail",
+      label: "Which email should we be invited under?",
+      type: "email",
+      required: true,
+      help: "Use the one we gave you if you have it, otherwise leave your own and we will confirm.",
+    },
+    {
+      id: "adAccounts",
+      label: "Do you run paid ads?",
+      type: "radio",
+      required: true,
+      options: [YES, "No", "Not sure"],
+      help: "Google, Facebook, Instagram or TikTok. Say no if nobody is actively running them.",
+    },
+    {
+      id: "onlinePayments",
+      label: "Does your website take payments?",
+      type: "radio",
+      required: true,
+      options: [YES, "No", "Not sure"],
+      help: "Selling packages, gift vouchers or classes online, as opposed to taking payment in the clinic.",
+    },
+    {
+      id: "newsletters",
+      label: "Do you send newsletters or marketing emails?",
+      type: "radio",
+      required: true,
+      options: [YES, "No", "Not sure"],
+    },
+    { id: "accessGrants", label: "Accounts", type: "access" },
+    {
+      id: "patientPulseEmail",
+      label: "Which email should we send your Patient Pulse login to?",
+      type: "email",
+      help: "This one is the other way round — we send you the invitation. Use whichever address the person handling day-to-day follow-up will read.",
+    },
+    {
+      id: "secretLink",
+      label: "Anything that cannot be shared by invitation",
+      type: "url",
+      placeholder: "https://onetimesecret.com/secret/...",
+      help: "A few older systems have one login and no way to add a second person. For those only: put the details into onetimesecret.com, set it to expire in 7 days, and paste the link here. Please do not type a password into this form.",
+    },
+    {
+      id: "accessNotes",
+      label: "Anything holding you up?",
+      type: "textarea",
+      rows: 3,
+      help: "A previous agency who will not hand over, an account set up by someone who has left, a login nobody can find. All very common. Tell us and we will work around it.",
+    },
+  ],
+};
 
 /** Fields visible for the current answers, per step. */
 export function visibleFields(step: Step, values: Values): Field[] {
   return step.fields.filter((f) => !f.showIf || f.showIf(values));
 }
 
-/** Access rows that apply to this client's business type and answers. */
+/** Access rows that apply to this client's answers. */
 export function visibleAccessItems(values: Values): AccessItem[] {
-  const t = values.businessType as BusinessType;
-  return ACCESS_ITEMS.filter(
-    (i) =>
-      (!i.appliesTo || !t || i.appliesTo.includes(t)) &&
-      (!i.showIf || i.showIf(values)),
-  );
+  return ACCESS_ITEMS.filter((i) => !i.showIf || i.showIf(values));
 }
-
-export const ACCESS_STATUSES = ["Granted", "Will do", "Do not have", "Need help"] as const;

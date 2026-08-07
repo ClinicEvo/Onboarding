@@ -1,10 +1,52 @@
-# Client onboarding form
+# Client onboarding
 
-A branching onboarding questionnaire for new website clients — clinics, solo
-practitioners, personal trainers, gyms and studios. Answers land in Drive as a
-formatted brief.
+Onboarding for new Clinic Evo clients — clinics, solo practitioners, personal
+trainers, gyms and studios. Answers land in the client's OneDrive folder as a
+Word brief, and both founders get an email.
 
 It collects **access grants, not passwords**. See [Why no password fields](#why-no-password-fields).
+
+---
+
+## Two forms, sent weeks apart
+
+| | Route | When | Size |
+| --- | --- | --- | --- |
+| **Stage 1** | `/` | The day they sign | 16 questions, ~5 minutes |
+| **Stage 2** | `/access` | After the kickoff call | 8 questions + up to 14 accounts |
+
+This split is the whole design, and it is worth not undoing.
+
+An earlier version asked all of it at once: 57 questions across 8 steps, ending
+in a checklist of 14 accounts to audit. It failed for a reason that had nothing
+to do with the questions being wrong — they were, mostly, the right questions.
+It failed because it arrived at the wrong moment. A clinic owner who has just
+decided to hire you is at peak goodwill, and handing them an hour of homework
+converts "they are taking this off my plate" into "I have bought something and
+been given a to-do list."
+
+So Stage 1 now asks only what cannot be researched and what is needed to begin.
+Everything else moved to one of two places:
+
+- **Clinic Evo's own research.** Existing site, sitemap, rankings, competitors,
+  reviews, current tracking. Never ask a client for something you can find out
+  yourself — turning up to the kickoff already knowing their three main organic
+  competitors demonstrates more than any question could.
+- **The kickoff conversation.** Which patients they want more of, what they do
+  not want to be associated with, what success looks like in six months. These
+  answers are richer spoken than typed into a textarea, and they need a
+  back-and-forth that a form cannot have.
+
+The full set of everything that used to be asked survives in
+[`docs/questions.md`](docs/questions.md) as the master discovery checklist. It
+is an internal document now, not a customer-facing one — which is what it should
+have been from the start.
+
+Deliberately **not** asked any more: which pages they need, which features the
+site must have, adjectives describing the brand, sites they like and dislike,
+whether a budget was agreed, who is writing the content, their brand fonts.
+Recommending the information architecture is the job they are paying for; asking
+them to specify it is asking them to do it themselves.
 
 ---
 
@@ -24,18 +66,23 @@ a silent no-op.
 ## How it fits together
 
 ```
-Client fills form
+Client fills either form
       │
       ▼
 POST /api/submit          validates, renders the brief, adds the shared secret
+                          (formKind decides which brief and which filename)
       │
       ▼
 Make webhook              filter rejects anything with the wrong secret
       │
       └─►  OneDrive: Master Folder/Clients/<Business>/
-                     └── <Business> — onboarding brief.md
+                     ├── <Business> — onboarding brief.docx
+                     └── <Business> — account access.docx
                      (folder reused if it exists, created if not)
 ```
+
+Both forms file into the same client folder under different names, so the second
+submission never overwrites the first.
 
 The Make webhook URL never reaches the browser. If it did, anyone could read it
 out of the page source and post junk straight into the Drive.
@@ -249,9 +296,17 @@ no emoji.
 
 ## Editing the questions
 
-Everything the client is asked lives in `lib/schema.ts`. The UI renders whatever
-it finds there, so adding a question means adding an object — no component
-changes.
+Everything the client is asked lives in `lib/schema.ts` — `STEPS` for Stage 1
+and `ACCESS_STEP` for Stage 2. The UI renders whatever it finds there, so adding
+a question means adding an object, with no component changes.
+
+**Before adding to Stage 1, ask whether it belongs there at all.** Could you find
+this out yourself? Is it better asked in the kickoff call? Stage 1 got long once
+already, and the pressure is always in that direction, because every question
+seems individually reasonable.
+
+Run `npm run questions` after any change — it regenerates the reference in
+`docs/`.
 
 ```ts
 {
@@ -263,9 +318,10 @@ changes.
 }
 ```
 
-`showIf` receives the current answers and decides whether the field renders.
-That is how clinics avoid being asked about class timetables, and personal
-trainers avoid being asked which insurers they accept.
+`showIf` receives the current answers and decides whether the field renders. On
+the access form it is what keeps the account list down: three questions about
+ads, payments and newsletters, and a typical clinic sees 8 accounts rather than
+14. Nobody should have to work out whether they have Tag Manager.
 
 Field types: `text`, `email`, `tel`, `url`, `textarea`, `radio`, `checkbox`,
 and `access` (the checklist, which renders once and is driven by

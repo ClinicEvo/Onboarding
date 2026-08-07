@@ -8,7 +8,18 @@
  */
 
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
-import { STEPS, ACCESS_ITEMS, BUSINESS_TYPES, type Field } from "../lib/schema";
+import {
+  STEPS,
+  ACCESS_STEP,
+  ACCESS_ITEMS,
+  BUSINESS_TYPES,
+  ACCESS_STATUSES,
+  type Field,
+  type AccessItem,
+} from "../lib/schema";
+
+/** Both forms, in the order a client meets them. */
+const ALL = [...STEPS, ACCESS_STEP];
 
 const TYPE_LABEL: Record<string, string> = {
   text: "Short text",
@@ -26,6 +37,15 @@ const TYPE_LABEL: Record<string, string> = {
  * generically. These read the source of each one and say it in English —
  * add a case here when a new conditional field is introduced.
  */
+function accessCondition(item: AccessItem): string | null {
+  if (!item.showIf) return null;
+  const src = item.showIf.toString();
+  if (src.includes("adAccounts")) return "Only if they run paid ads";
+  if (src.includes("onlinePayments")) return "Only if the site takes payments";
+  if (src.includes("newsletters")) return "Only if they send newsletters";
+  return "Conditional";
+}
+
 function conditionText(field: Field): string | null {
   if (!field.showIf) return null;
   const src = field.showIf.toString();
@@ -41,15 +61,6 @@ function conditionText(field: Field): string | null {
   return "Conditional";
 }
 
-const questionCount = STEPS.reduce(
-  (n, s) => n + s.fields.filter((f) => f.type !== "access").length,
-  0,
-);
-const conditionalCount = STEPS.reduce(
-  (n, s) => n + s.fields.filter((f) => f.showIf).length,
-  0,
-);
-
 /* ---------------------------------------------------------------- Markdown */
 
 const md: string[] = [];
@@ -61,11 +72,11 @@ md.push(
 );
 md.push("");
 md.push(
-  `The form has ${STEPS.length} steps and ${questionCount} questions, ${conditionalCount} of which only appear for certain kinds of business. Question two, **What kind of business is this?**, is what decides that. The options are: ${BUSINESS_TYPES.map((t) => `*${t}*`).join(", ")}.`,
+  `Two separate forms, sent weeks apart. **${STEPS[0].title}** goes out the day a client signs — ${STEPS[0].fields.length} questions, about five minutes. **${ACCESS_STEP.title}** goes out after the kickoff call, once there is enough trust to ask for logins.\n\nBusiness types: ${BUSINESS_TYPES.map((t) => `*${t}*`).join(", ")}.\n\nEverything deliberately left out of these forms lives in the master discovery checklist — those are questions for the kickoff conversation, or things Clinic Evo researches itself.`,
 );
 md.push("");
 
-for (const [i, step] of STEPS.entries()) {
+for (const [i, step] of ALL.entries()) {
   md.push(`## ${i + 1}. ${step.title}`);
   md.push("");
   md.push(`*${step.blurb}*`);
@@ -76,7 +87,7 @@ for (const [i, step] of STEPS.entries()) {
       md.push("### Access checklist");
       md.push("");
       md.push(
-        "For each item the client picks one of: **Granted**, **Will do**, **Do not have**, **Need help**.",
+        `For each item the client picks one of: ${ACCESS_STATUSES.map((x) => `**${x}**`).join(", ")}.`,
       );
       md.push("");
       for (const item of ACCESS_ITEMS) {
@@ -86,8 +97,9 @@ for (const [i, step] of STEPS.entries()) {
           md.push(`> Sent to **${item.grantTo}**, not the address given above.`);
           md.push("");
         }
-        if (item.showIf) {
-          md.push("> Only shown if they already run ads.");
+        const ac = accessCondition(item);
+        if (ac) {
+          md.push(`> ${ac}.`);
           md.push("");
         }
         md.push(item.how);
@@ -241,23 +253,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.875em;
 h.push(`<div class="wrap">
 <p class="eyebrow">Clinic Evo onboarding</p>
 <h1>Every question we ask</h1>
-<p class="lede">The full question set, with the guidance each one shows the client. No client sees all of it — what they are asked depends on the kind of business they say they are.</p>
+<p class="lede">Two forms, sent weeks apart. The short one goes out the day a client signs; the access one waits until after the kickoff call. Anything not here is either researched by us or discussed in the meeting.</p>
 <dl class="stats">
-  <div><dt>Steps</dt><dd>${STEPS.length}</dd></div>
-  <div><dt>Questions</dt><dd>${questionCount}</dd></div>
-  <div><dt>Only for some businesses</dt><dd>${conditionalCount}</dd></div>
-  <div><dt>Access items</dt><dd>${ACCESS_ITEMS.length}</dd></div>
+  <div><dt>Day one</dt><dd>${STEPS[0].fields.length}</dd></div>
+  <div><dt>After kickoff</dt><dd>${ACCESS_STEP.fields.length - 1}</dd></div>
+  <div><dt>Accounts, at most</dt><dd>${ACCESS_ITEMS.length}</dd></div>
+  <div><dt>Typical clinic sees</dt><dd>${ACCESS_ITEMS.filter((i) => !i.showIf).length}</dd></div>
 </dl>
 <div class="layout">
 <nav class="toc"><p>Steps</p><ol>`);
 
-for (const step of STEPS) {
+for (const step of ALL) {
   h.push(`<li><a href="#${slug(step.title)}">${esc(step.title)}</a></li>`);
 }
 
 h.push(`</ol></nav><main>`);
 
-for (const step of STEPS) {
+for (const step of ALL) {
   h.push(`<section class="step" id="${slug(step.title)}">
     <div class="step-head">
       <h2>${esc(step.title)}</h2>
@@ -270,8 +282,9 @@ for (const step of STEPS) {
         <ul class="statuses"><li>Granted</li><li>Will do</li><li>Do not have</li><li>Need help</li></ul>`);
       for (const item of ACCESS_ITEMS) {
         h.push(`<div class="item"><h4>${esc(item.label)}</h4>`);
-        if (item.showIf) {
-          h.push(`<div class="tags"><span class="tag cond">If they already run ads</span></div>`);
+        const ac = accessCondition(item);
+        if (ac) {
+          h.push(`<div class="tags"><span class="tag cond">${esc(ac)}</span></div>`);
         }
         h.push(`<p class="how">${esc(item.how)}</p>`);
         if (item.grantTo) {
@@ -312,5 +325,5 @@ writeFileSync("docs/questions.md", md.join("\n"));
 writeFileSync("docs/questions.html", h.join("\n"));
 
 console.log(
-  `docs/questions.md + docs/questions.html — ${STEPS.length} steps, ${questionCount} questions (${conditionalCount} conditional), ${ACCESS_ITEMS.length} access items.`,
+  `docs/questions.md + docs/questions.html — stage 1: ${STEPS[0].fields.length} questions, access: ${ACCESS_STEP.fields.length - 1} plus up to ${ACCESS_ITEMS.length} accounts.`,
 );

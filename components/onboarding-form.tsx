@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -16,6 +15,7 @@ import { WarningIcon } from "@phosphor-icons/react/dist/csr/Warning";
 
 import {
   STEPS,
+  ACCESS_STEP,
   visibleFields,
   visibleAccessItems,
   type Field,
@@ -23,7 +23,9 @@ import {
 } from "@/lib/schema";
 import { AccessGrid, CheckboxGroup, RadioGroup, TextField } from "./fields";
 
-const DRAFT_KEY = "onboarding-draft-v1";
+/* Per-form key. Without this, a client who filled in onboarding would have
+   those answers restored into the access form weeks later. */
+const draftKey = (kind: string) => `clinicevo-draft-${kind}-v2`;
 
 /* Canonical "have we hydrated yet" check: false on the server, true on the
    client, with nothing to subscribe to. */
@@ -97,16 +99,16 @@ interface Draft {
  * render. The restored values only reach the DOM once `hydrated` flips, which
  * is why there is no hydration mismatch despite the state differing.
  */
-function readDraft(): Draft | null {
+function readDraft(key: string): Draft | null {
   if (typeof window === "undefined") return null;
   try {
-    const saved = localStorage.getItem(DRAFT_KEY);
+    const saved = localStorage.getItem(key);
     if (!saved) return null;
     const parsed = JSON.parse(saved);
     return {
       values: parsed.values ?? {},
       grants: parsed.grants ?? {},
-      stepIndex: Math.min(parsed.stepIndex ?? 0, STEPS.length - 1),
+      stepIndex: parsed.stepIndex ?? 0,
     };
   } catch {
     /* Corrupt draft is not worth surfacing — start clean. */
@@ -115,14 +117,28 @@ function readDraft(): Draft | null {
 }
 
 interface Props {
+  /**
+   * Which of the two forms to render.
+   *
+   * The steps are looked up here rather than passed in as a prop: they carry
+   * `showIf` functions, and functions cannot cross the server/client boundary,
+   * so a Server Component handing them over fails at runtime.
+   */
+  formKind: "onboarding" | "access";
   /** Per-client code from the URL. Empty when gating is off. */
   clientCode: string;
   /** Client name resolved from that code. Empty when gating is off. */
   clientName: string;
 }
 
-export default function OnboardingForm({ clientCode, clientName }: Props) {
-  const [draft] = useState(readDraft);
+export default function OnboardingForm({
+  formKind,
+  clientCode,
+  clientName,
+}: Props) {
+  const steps = formKind === "access" ? [ACCESS_STEP] : STEPS;
+  const key = draftKey(formKind);
+  const [draft] = useState(() => readDraft(key));
   const [stepIndex, setStepIndex] = useState(draft?.stepIndex ?? 0);
   // Prefill the business name when we already know who this is — one less
   // thing to type, and it shows the client the link was meant for them.
@@ -145,18 +161,21 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const reduceMotion = useReducedMotion();
 
-  const step = STEPS[stepIndex];
-  const fields = useMemo(() => visibleFields(step, values), [step, values]);
-  const accessItems = useMemo(() => visibleAccessItems(values), [values]);
-  const isLast = stepIndex === STEPS.length - 1;
+  const step = steps[stepIndex];
+  // No useMemo: both are cheap filters over a short list, and hand-rolled
+  // memoization here blocks the React Compiler from optimising the component.
+  const fields = visibleFields(step, values);
+  const accessItems = visibleAccessItems(values);
+  const isLast = stepIndex === steps.length - 1;
+  const singleStep = steps.length === 1;
 
   useEffect(() => {
     if (!hydrated || status === "done") return;
     localStorage.setItem(
-      DRAFT_KEY,
+      key,
       JSON.stringify({ values, grants, stepIndex }),
     );
-  }, [values, grants, stepIndex, hydrated, status]);
+  }, [values, grants, stepIndex, hydrated, status, key]);
 
   const setValue = useCallback((id: string, value: string | string[]) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -206,6 +225,7 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
           values,
           accessGrants: grants,
           clientCode,
+          formKind,
           submittedAt: new Date().toISOString(),
         }),
       });
@@ -213,7 +233,7 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? `Server responded ${res.status}`);
       }
-      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(key);
       setStatus("done");
       focusHeading();
     } catch (err) {
@@ -227,7 +247,7 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
     return (
       <div className="mx-auto grid w-full max-w-[75rem] gap-10 px-6 py-16 md:grid-cols-[240px_minmax(0,1fr)] md:gap-16 md:px-10 md:py-24">
         <div className="hidden flex-col gap-3 md:flex">
-          {STEPS.map((s) => (
+          {steps.map((s) => (
             <div key={s.id} className="h-4 w-32 animate-pulse rounded-sm bg-line" />
           ))}
         </div>
@@ -265,39 +285,66 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
         >
           That is everything.
         </h1>
-        <p className="mt-4 max-w-[62ch] text-lg text-muted">
-          Your answers are saved and we have been notified. We will read through
-          properly and come back within two working days, usually with a handful
-          of follow-up questions.
-        </p>
-        <div className="mt-8 border-l-2 border-accent pl-4">
-          <p className="font-display text-[0.9375rem] font-semibold text-ink">
-            While you wait
-          </p>
-          <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
-            If you left any access items as{" "}
-            <span className="text-ink">Will do</span>, working through those now
-            is the single most useful thing you can do. Access is the usual
-            reason a build sits waiting.
-          </p>
-        </div>
+        {formKind === "onboarding" ? (
+          <>
+            <p className="mt-4 max-w-[62ch] text-lg text-muted">
+              That is enough for us to get started. We will go away and look
+              properly at your website, your search presence and who you are up
+              against locally.
+            </p>
+            <div className="mt-8 border-l-2 border-accent pl-4">
+              <p className="font-display text-[0.9375rem] font-semibold text-ink">
+                What happens next
+              </p>
+              <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
+                We will be in touch within two working days to book your kickoff
+                call. By then we will have done our homework, so that call is
+                about what we have found rather than more questions for you.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-4 max-w-[62ch] text-lg text-muted">
+              Thank you — we have been notified and will start connecting things
+              up.
+            </p>
+            <div className="mt-8 border-l-2 border-accent pl-4">
+              <p className="font-display text-[0.9375rem] font-semibold text-ink">
+                Anything you were unsure about
+              </p>
+              <p className="mt-1 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">
+                We will pick those up with you directly. Nothing you marked{" "}
+                <span className="text-ink">Not sure</span> needs any more work
+                from you.
+              </p>
+            </div>
+          </>
+        )}
       </motion.div>
     );
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-[75rem] gap-10 px-6 py-16 md:grid-cols-[240px_minmax(0,1fr)] md:gap-16 md:px-10 md:py-24">
-      {/* Progress rail — sticky on desktop, compact bar on mobile. */}
+    <div
+      className={`mx-auto grid w-full gap-10 px-6 py-16 md:gap-16 md:px-10 md:py-24 ${
+        singleStep
+          ? "max-w-[46rem]"
+          : "max-w-[75rem] md:grid-cols-[240px_minmax(0,1fr)]"
+      }`}
+    >
+      {/* Progress rail — pointless on a one-step form, so it is not rendered. */}
+      {!singleStep && (
       <aside className="md:sticky md:top-24 md:self-start">
         <p className="eyebrow">
-          Step {stepIndex + 1} of {STEPS.length}
+          Step {stepIndex + 1} of {steps.length}
         </p>
 
         <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-line md:hidden">
           <motion.div
             className="h-full origin-left bg-accent"
             initial={false}
-            animate={{ scaleX: (stepIndex + 1) / STEPS.length }}
+            animate={{ scaleX: (stepIndex + 1) / steps.length }}
             transition={SPRING}
             style={{ width: "100%" }}
           />
@@ -306,7 +353,7 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
         {/* No step title here — the h1 below already says it on mobile. */}
 
         <ol className="mt-5 hidden flex-col gap-0.5 md:flex">
-          {STEPS.map((s, i) => {
+          {steps.map((s, i) => {
             const done = i < stepIndex;
             const current = i === stepIndex;
             return (
@@ -362,6 +409,7 @@ export default function OnboardingForm({ clientCode, clientName }: Props) {
           </p>
         )}
       </aside>
+      )}
 
       {/* Form column */}
       <div className="min-w-0">

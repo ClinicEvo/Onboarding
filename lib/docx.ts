@@ -11,7 +11,8 @@ import {
   WidthType,
 } from "docx";
 
-import { STEPS, visibleFields, visibleAccessItems, type Values } from "./schema";
+import { visibleFields, visibleAccessItems, type Values } from "./schema";
+import { stepsFor, type FormKind } from "./brief";
 
 /**
  * Builds the onboarding brief as a real Word document.
@@ -26,6 +27,9 @@ const INK = "0D1B2A";
 const ACCENT = "FF5B4A";
 const MUTED = "6B7280";
 const LINE = "E5E7EB";
+
+/** Statuses that mean the client still has something to do. */
+const BLOCKING: string[] = ["Will do", "Not sure — help me"];
 
 const hairline = {
   style: BorderStyle.SINGLE,
@@ -51,6 +55,7 @@ export function buildBriefDocx(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
+  kind: FormKind = "onboarding",
 ): Promise<Buffer> {
   const name = String(values.businessName ?? "Unnamed").trim();
   const children: (Paragraph | Table)[] = [];
@@ -65,7 +70,7 @@ export function buildBriefDocx(
       spacing: { after: 400 },
       children: [
         new TextRun({
-          text: `Onboarding brief · submitted ${new Date(submittedAt).toLocaleString(
+          text: `${kind === "access" ? "Account access" : "Onboarding brief"} · submitted ${new Date(submittedAt).toLocaleString(
             "en-GB",
             { dateStyle: "long", timeStyle: "short", timeZone: "Europe/London" },
           )}`,
@@ -76,7 +81,7 @@ export function buildBriefDocx(
     }),
   );
 
-  for (const step of STEPS) {
+  for (const step of stepsFor(kind)) {
     const fields = visibleFields(step, values).filter((f) => f.type !== "access");
 
     const answered = fields.filter((f) => {
@@ -126,7 +131,8 @@ export function buildBriefDocx(
     }
   }
 
-  /* Access gets a real table — it is the section that blocks the build. */
+  /* Access gets a real table, and only on the access brief. */
+  if (kind === "access") {
   children.push(
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
@@ -175,7 +181,7 @@ export function buildBriefDocx(
                 cell(r.label),
                 cell(
                   r.status,
-                  r.status === "Will do" || r.status === "Need help"
+                  BLOCKING.includes(r.status)
                     ? { color: ACCENT, bold: true }
                     : {},
                 ),
@@ -187,7 +193,7 @@ export function buildBriefDocx(
   );
 
   const blocking = rows.filter(
-    (r) => r.status === "Will do" || r.status === "Need help",
+    (r) => BLOCKING.includes(r.status),
   );
 
   if (blocking.length > 0) {
@@ -198,22 +204,6 @@ export function buildBriefDocx(
           new TextRun({ text: "Chase these: ", bold: true, size: 21, color: ACCENT }),
           new TextRun({
             text: blocking.map((g) => `${g.label} (${g.status})`).join("; "),
-            size: 21,
-            color: INK,
-          }),
-        ],
-      }),
-    );
-  }
-
-  if (values.adAccounts === "No, and we would like help setting them up") {
-    children.push(
-      new Paragraph({
-        spacing: { before: 160 },
-        children: [
-          new TextRun({
-            text: "They want help setting up ad accounts. No ad platform access was requested for that reason.",
-            bold: true,
             size: 21,
             color: INK,
           }),
@@ -237,10 +227,11 @@ export function buildBriefDocx(
       }),
     );
   }
+  }
 
   const doc = new Document({
     creator: "Clinic Evo onboarding",
-    title: `${name} — onboarding brief`,
+    title: `${name} — ${kind === "access" ? "account access" : "onboarding brief"}`,
     styles: {
       default: {
         document: { run: { font: "Aptos", size: 21, color: INK } },
@@ -264,17 +255,18 @@ export async function buildBriefDocxBase64(
   values: Values,
   accessGrants: Record<string, string>,
   submittedAt: string,
+  kind: FormKind = "onboarding",
 ): Promise<string> {
-  const buffer = await buildBriefDocx(values, accessGrants, submittedAt);
+  const buffer = await buildBriefDocx(values, accessGrants, submittedAt, kind);
   return Buffer.from(buffer).toString("base64");
 }
 
 /** Word-safe filename — same forbidden characters as the folder name. */
-export function briefFilename(businessName: string): string {
+export function briefFilename(businessName: string, kind: FormKind = "onboarding"): string {
   const safe = businessName
     .replace(/["*:<>?/\\|]/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 80);
-  return `${safe} — onboarding brief.docx`;
+  return `${safe} — ${kind === "access" ? "account access" : "onboarding brief"}.docx`;
 }
