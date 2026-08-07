@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { renderBrief } from "@/lib/brief";
+import { buildBriefDocxBase64, briefFilename } from "@/lib/docx";
 import { lookupClient } from "@/lib/clients";
 
 /**
@@ -115,7 +116,15 @@ export async function POST(request: Request) {
         submittedAt,
         folderName,
         clientCode: clientCode ?? "",
-        // Pre-formatted Markdown so the Make scenario only has to write a file.
+        /*
+          The brief as a Word document, base64 encoded. Make decodes it back to
+          bytes before uploading, so what lands in Drive is a real .docx that
+          opens and edits in Word rather than something Word has to guess at.
+        */
+        briefDocx: await buildBriefDocxBase64(values, accessGrants, submittedAt),
+        briefFilename: briefFilename(client ?? businessName),
+        // Plain-text version kept alongside it — useful for anything that wants
+        // to read the content without parsing a Word file.
         brief: renderBrief(values, accessGrants, submittedAt),
         values,
         accessGrants,
