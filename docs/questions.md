@@ -2,9 +2,7 @@
 
 Generated from `lib/schema.ts` — do not edit by hand. Run `npm run questions` to rebuild after changing the questions.
 
-The form has 8 steps. Question two, **What kind of business is this?**, decides which of the later questions appear. The options are: *Clinic or multi-practitioner practice*, *Solo practitioner*, *Personal trainer or coach*, *Gym, studio or class-based*, *Something else*.
-
-Fields marked **Required** must be filled in before the client can continue.
+The form has 8 steps and 57 questions, 13 of which only appear for certain kinds of business. Question two, **What kind of business is this?**, is what decides that. The options are: *Clinic or multi-practitioner practice*, *Solo practitioner*, *Personal trainer or coach*, *Gym, studio or class-based*, *Something else*.
 
 ## 1. The basics
 
@@ -28,7 +26,7 @@ Pick one · **Required**
 
 ### Tell us what you do
 
-Short text · Only if they picked “Something else”
+Short text · Only: If they picked “Something else”
 
 ### Main contact
 
@@ -76,19 +74,19 @@ Long text
 
 ### Conditions you commonly treat
 
-Long text · Clinics and solo practitioners only
+Long text · Only: Clinics and solo practitioners
 
 > These often become individual pages, so list the ones you actually want to be found for.
 
 ### Insurers you accept
 
-Long text · Clinics and solo practitioners only
+Long text · Only: Clinics and solo practitioners
 
 > Bupa, AXA, Vitality, Aviva and so on. Include any registration numbers they issued you.
 
 ### How do you deliver sessions?
 
-Pick one · Personal trainers, gyms and studios only
+Pick one · Only: Trainers, gyms and studios
 
 - In person only
 - Online only
@@ -96,19 +94,19 @@ Pick one · Personal trainers, gyms and studios only
 
 ### Packages and programmes
 
-Long text · Personal trainers and coaches only
+Long text · Only: Personal trainers and coaches
 
 > Block bookings, 12-week programmes, nutrition add-ons, whatever you sell beyond single sessions.
 
 ### Class timetable
 
-Long text · Gyms, studios and class-based only
+Long text · Only: Gyms, studios and classes
 
 > Paste it in, or link to where it currently lives. Tell us how often it changes.
 
 ### Membership tiers
 
-Long text · Gyms, studios and class-based only
+Long text · Only: Gyms, studios and classes
 
 > What each tier includes, contract length, joining fees.
 
@@ -124,13 +122,13 @@ Long text
 
 ### Professional registrations
 
-Long text · Clinics and solo practitioners only
+Long text · Only: Clinics and solo practitioners
 
 > GOsC, HCPC, CSP, GCC, BAcC and similar, with registration numbers. These usually have to be displayed, so we need them exactly right.
 
 ### Qualifications and certifications
 
-Long text · Personal trainers, gyms and studios only
+Long text · Only: Trainers, gyms and studios
 
 > CIMSPA, REPs, governing body awards, first aid, plus your public liability insurer.
 
@@ -152,15 +150,15 @@ Web address
 
 ### What works about it?
 
-Long text · Only if they have a current website
+Long text · Only: If they have a current website
 
 ### What does not?
 
-Long text · Only if they have a current website
+Long text · Only: If they have a current website
 
 ### Should we carry the existing content over?
 
-Pick one · Only if they have a current website
+Pick one · Only: If they have a current website
 
 - Keep most of it
 - Keep some, rewrite the rest
@@ -199,7 +197,7 @@ Pick one
 
 ### Which one?
 
-Short text · Only if they picked “Other”
+Short text · Only: If they picked “Other”
 
 ### Social profiles
 
@@ -366,7 +364,7 @@ Pick one
 
 ### Access checklist
 
-For each item below the client picks one of: **Granted**, **Will do**, **Do not have**, **Need help**.
+For each item the client picks one of: **Granted**, **Will do**, **Do not have**, **Need help**.
 
 **Domain registrar**
 
@@ -404,7 +402,7 @@ Admin, User Management, the + button, Add users, then give Publish permission on
 
 > Sent to **dmorgan18@googlemail.com**, not the address given above.
 
-> Only shown if they already have ad accounts.
+> Only shown if they already run ads.
 
 Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that has to be accepted, so it will not show as active straight away.
 
@@ -412,7 +410,7 @@ Admin, Access and security, the + button, enter the email and choose Admin. Goog
 
 > Sent to **dmorgan18@googlemail.com**, not the address given above.
 
-> Only shown if they already have ad accounts.
+> Only shown if they already run ads.
 
 Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then turn on Manage campaigns. This is separate from page access above — granting one does not grant the other.
 
@@ -420,7 +418,7 @@ Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then t
 
 > Sent to **dmorgan18@googlemail.com**, not the address given above.
 
-> Only shown if they already have ad accounts.
+> Only shown if they already run ads.
 
 TikTok Ads Manager, Assets, Users, Invite, and choose Admin.
 
