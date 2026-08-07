@@ -51,10 +51,18 @@ Already built and running — **Clinic Evo — onboarding submissions**, scenari
 | --- | --- | --- |
 | 1 | Custom webhook | Receives the submission. Hook `4302421`. |
 | 3 | OneDrive → Upload a File | Writes the brief by **path**. Carries the security filter. |
-| 4 | Microsoft 365 Email → Send an Email | Notifies Simon, with a link to the brief. |
+| 6 | OneDrive → Get a Share Link | Anonymous **edit** link to the client folder, so they can upload assets. |
+| 4 | Microsoft 365 Email → Send an Email | Notifies Simon, CC Danny, with both links. |
 
-(Module numbering skips 2; the original create-folder module was removed when
-path upload replaced it.)
+(Module numbering is not sequential — 2 was the original create-folder module,
+removed when path upload replaced it. Execution order is the table order.)
+
+Module 6's link lets **anyone who has it** upload into that client's folder, so
+the email says to forward it only to the client. It is generated per submission
+and included in the notification rather than shown on the form, because the
+folder does not exist until the submission is processed. Anonymous sharing is
+permitted on this tenant — verified — but if that policy ever changes the link
+comes through blank and the `Ignore` handler stops it breaking the run.
 
 Module 2 addresses the destination as a path rather than a folder ID:
 
@@ -251,6 +259,16 @@ trainers avoid being asked which insurers they accept.
 Field types: `text`, `email`, `tel`, `url`, `textarea`, `radio`, `checkbox`,
 and `access` (the checklist, which renders once and is driven by
 `ACCESS_ITEMS`).
+
+Access rows take two optional extras beyond `how`:
+
+- `grantTo` — a specific address for that row, shown in place of the email at
+  the top of the step. The ad platforms use this because they go to
+  `dmorgan18@googlemail.com`, not the studio address, and without it clients
+  invite the wrong one.
+- `showIf` — same conditional logic as fields. The ad platform rows use it so
+  they only appear for clients who answered that they already have ad accounts.
+  Clients who ask for help setting them up get flagged in the brief instead.
 
 Steps are the `STEPS` array. Reordering it reorders the form.
 
