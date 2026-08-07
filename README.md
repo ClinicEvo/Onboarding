@@ -68,8 +68,8 @@ Module 2 addresses the destination as a path rather than a folder ID:
 
 ```
 folder    /Master Folder/Clients/{{1.folderName}}
-filename  {{1.businessName}} — onboarding brief.md
-data      {{1.brief}}
+filename  {{1.briefFilename}}
+data      {{toBinary(1.briefDocx; "base64")}}
 ```
 
 **Addressing by path is what makes returning clients work.** OneDrive reuses the
@@ -90,9 +90,20 @@ travels in the request body rather than a header because Make matches body
 fields far more reliably than hyphenated header names — equally private either
 way over HTTPS.
 
-The `brief` field arrives as fully-formatted Markdown, assembled in
-`lib/brief.ts`. There is no template document to maintain and no placeholder
-mapping to keep in sync with the questions.
+**The brief is a real Word document.** It is built in `lib/docx.ts` with proper
+headings, bold field labels and a table for the access checklist, then sent
+base64 encoded. `toBinary(...; "base64")` decodes it back to bytes before
+upload — without that Make would write the base64 text into the file and Word
+could not open it. Sanity check if it ever looks wrong: a correct upload is
+around 10KB, the base64 text would be nearer 14KB.
+
+`lib/brief.ts` still renders the same content as Markdown. Nothing files it any
+more, but it is what the local dev log prints and it is far easier to eyeball
+than a Word file when checking a change to the question set.
+
+There is no template document to maintain and no placeholder mapping to keep in
+sync with the questions — both renderers walk `STEPS` directly, so a new
+question appears in the brief automatically.
 
 The OneDrive connection is Microsoft OAuth as `Simon@clinicevolution.com`. Note
 that connections can only be created **from inside a scenario module** in the
