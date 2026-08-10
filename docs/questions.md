@@ -187,12 +187,6 @@ Admin, Property access management, add the email as Editor. Plenty of clinics do
 
 Settings, Users and permissions, Add user, Full. If it does not exist we will set it up.
 
-**Facebook and Instagram**
-
-> Invite **dmorgan18@googlemail.com**.
-
-Meta Business Suite, Settings, People, invite the email with Content access. This is your pages, not advertising.
-
 **Booking system**
 
 > Invite **simon@clinicevolution.com**.
@@ -215,7 +209,7 @@ Admin, Access and security, the + button, enter the email and choose Admin. Goog
 
 > Invite **dmorgan18@googlemail.com**.
 
-Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.
+Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. This is the advertising account, not your Facebook or Instagram pages.
 
 **TikTok Ads**
 

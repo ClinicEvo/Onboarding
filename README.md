@@ -31,7 +31,7 @@ Everything cut lives in [`docs/questions.md`](docs/questions.md)'s companion —
 the master discovery checklist — and in the kickoff conversation, where answers
 are richer than textareas.
 
-All 14 accounts are always on display. An earlier version hid the ones a
+All 13 accounts are always on display. An earlier version hid the ones a
 client said they did not have, which sounds kinder but means a clinic never sees
 the shape of what Clinic Evo actually works on — and hiding TikTok because
 somebody answered "no" to a filter question is a worse outcome than showing it
@@ -51,7 +51,7 @@ Those addresses are split by who does the work, not by category:
 | Address | Rows |
 | --- | --- |
 | `simon@clinicevolution.com` | Domain, hosting, website login, Analytics, Search Console, Tag Manager, booking, newsletter, payments |
-| `dmorgan18@googlemail.com` (Danny) | Facebook/Instagram, Google Ads, Meta Ads |
+| `dmorgan18@googlemail.com` (Danny) | Google Ads, Meta Ads |
 | `danny@clinicevolution.com` | TikTok Ads |
 | **Both Danny and Simon** | Google Business Profile |
 

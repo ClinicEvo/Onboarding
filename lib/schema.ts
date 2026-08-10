@@ -127,12 +127,6 @@ export const ACCESS_ITEMS: AccessItem[] = [
     grantTo: [SIMON],
   },
   {
-    id: "meta",
-    label: "Facebook and Instagram",
-    how: "Meta Business Suite, Settings, People, invite the email with Content access. This is your pages, not advertising.",
-    grantTo: [DANNY_GMAIL],
-  },
-  {
     id: "booking",
     label: "Booking system",
     how: "Add us as a staff or admin user, so we can connect booking to the new site.",
@@ -153,7 +147,7 @@ export const ACCESS_ITEMS: AccessItem[] = [
   {
     id: "meta-ads",
     label: "Meta Ads account",
-    how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.",
+    how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. This is the advertising account, not your Facebook or Instagram pages.",
     grantTo: [DANNY_GMAIL],
   },
   {
