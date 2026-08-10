@@ -79,7 +79,7 @@ export function renderBrief(
   // Only the rows this client was actually shown — listing ad platforms as
   // "Not answered" for someone who does not run ads is just noise.
   const grantEntries = visibleAccessItems(values).map((item) => ({
-    label: `${item.label} (to ${item.grantTo})`,
+    label: `${item.label} (to ${item.grantTo.join(" + ")})`,
     status: accessGrants[item.id] || "Not answered",
   }));
 

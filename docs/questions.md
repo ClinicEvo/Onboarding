@@ -153,85 +153,85 @@ For each item the client picks one of: **Done**, **Will do**, **Do not have one*
 
 **Your domain name**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Whoever you bought the domain from — often GoDaddy, 123-reg or Namecheap. They all have a way to add a second person. Not sure who it is with? Say so and we will find out.
 
 **Web hosting**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 The company the website actually sits on, sometimes the same as the domain. Most allow a second login.
 
 **Your website login**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 In WordPress: Users, Add New, set the role to Administrator. Squarespace, Wix and Webflow all have an equivalent invite.
 
 **Google Business Profile**
 
-> Sent to **dmorgan18@googlemail.com**, not the address given above.
+> Invite both **dmorgan18@googlemail.com** and **simon@clinicevolution.com**.
 
-The listing that shows on Google Maps. Business Profile, Settings, People and access, Add, then Manager.
+The listing that shows on Google Maps. Business Profile, Settings, People and access, Add, then Manager. Add both addresses — the form is the same, you just do it twice.
 
 **Google Analytics**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Admin, Property access management, add the email as Editor. Plenty of clinics do not have this set up — that is fine, we will create it.
 
 **Google Search Console**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Settings, Users and permissions, Add user, Full. If it does not exist we will set it up.
 
 **Facebook and Instagram**
 
-> Sent to **dmorgan18@googlemail.com**, not the address given above.
+> Invite **dmorgan18@googlemail.com**.
 
 Meta Business Suite, Settings, People, invite the email with Content access. This is your pages, not advertising.
 
 **Booking system**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Add us as a staff or admin user, so we can connect booking to the new site.
 
 **Google Tag Manager**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Admin, User Management, the + button, then Publish permission. Only relevant if someone set this up for you previously.
 
 **Google Ads**
 
-> Sent to **dmorgan18@googlemail.com**, not the address given above.
+> Invite **dmorgan18@googlemail.com**.
 
 Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that needs accepting, so it will not show as active immediately.
 
 **Meta Ads account**
 
-> Sent to **dmorgan18@googlemail.com**, not the address given above.
+> Invite **dmorgan18@googlemail.com**.
 
 Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.
 
 **TikTok Ads**
 
-> Sent to **danny@clinicevolution.com**, not the address given above.
+> Invite **danny@clinicevolution.com**.
 
 TikTok Ads Manager, Assets, Users, Invite, choose Admin.
 
 **Newsletter software**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.
 
 **Payments**
 
-> Sent to **simon@clinicevolution.com**, not the address given above.
+> Invite **simon@clinicevolution.com**.
 
 Stripe, Settings, Team, invite as Developer.
 

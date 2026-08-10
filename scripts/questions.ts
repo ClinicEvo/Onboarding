@@ -92,7 +92,9 @@ for (const [i, step] of ALL.entries()) {
         md.push(`**${item.label}**`);
         md.push("");
         if (item.grantTo) {
-          md.push(`> Sent to **${item.grantTo}**, not the address given above.`);
+          md.push(
+            `> Invite ${item.grantTo.length > 1 ? "both " : ""}**${item.grantTo.join("** and **")}**.`,
+          );
           md.push("");
         }
         const ac = accessCondition(item);
@@ -287,7 +289,7 @@ for (const step of ALL) {
         h.push(`<p class="how">${esc(item.how)}</p>`);
         if (item.grantTo) {
           h.push(
-            `<p class="grant">Goes to <strong>${esc(item.grantTo)}</strong>, not the address given at the top of the step.</p>`,
+            `<p class="grant">Invite ${item.grantTo.length > 1 ? "both " : ""}${item.grantTo.map((a) => `<strong>${esc(a)}</strong>`).join(" and ")}</p>`,
           );
         }
         h.push(`</div>`);

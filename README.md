@@ -51,8 +51,14 @@ Those addresses are split by who does the work, not by category:
 | Address | Rows |
 | --- | --- |
 | `simon@clinicevolution.com` | Domain, hosting, website login, Analytics, Search Console, Tag Manager, booking, newsletter, payments |
-| `dmorgan18@googlemail.com` | Google Business Profile, Facebook/Instagram, Google Ads, Meta Ads |
+| `dmorgan18@googlemail.com` (Danny) | Facebook/Instagram, Google Ads, Meta Ads |
 | `danny@clinicevolution.com` | TikTok Ads |
+| **Both Danny and Simon** | Google Business Profile |
+
+`grantTo` is a list, so any row can name more than one address. Where it does,
+the client is told to invite **both** rather than being shown two addresses and
+left to guess — that ambiguity is exactly how one of you ends up locked out of
+an account three weeks later.
 
 Both of Danny's addresses are deliberately in use — the Google and Meta ad
 platforms are tied to his Gmail, TikTok to his work address. Worth knowing

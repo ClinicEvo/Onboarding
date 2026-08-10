@@ -148,7 +148,7 @@ export function buildBriefDocx(
   );
 
   const rows = visibleAccessItems(values).map((item) => ({
-    label: `${item.label} (to ${item.grantTo})`,
+    label: `${item.label} (to ${item.grantTo.join(" + ")})`,
     status: accessGrants[item.id] || "Not answered",
   }));
 

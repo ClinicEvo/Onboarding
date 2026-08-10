@@ -228,13 +228,20 @@ export function AccessGrid({
                 <p className="max-w-[58ch] text-[0.8125rem] leading-relaxed text-muted">
                   {item.how}
                 </p>
-                {/* Every row names its address — web goes to one inbox, ads
-                    to another, and clients should never have to remember which. */}
+                {/* Every row names its own addresses — different rows go to
+                    different people, and a client should never have to
+                    remember which. Where there are two, both are needed, so
+                    say "both" rather than listing them and hoping. */}
                 <p className="mt-1 max-w-[58ch] text-[0.8125rem] leading-relaxed text-ink">
-                  Invite{" "}
-                  <span className="font-semibold text-accent">
-                    {item.grantTo}
-                  </span>
+                  Invite {item.grantTo.length > 1 && "both "}
+                  {item.grantTo.map((address, i) => (
+                    <span key={address}>
+                      {i > 0 && " and "}
+                      <span className="font-semibold text-accent">
+                        {address}
+                      </span>
+                    </span>
+                  ))}
                 </p>
               </div>
 
