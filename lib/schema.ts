@@ -61,10 +61,17 @@ export interface Step {
 
 /* ------------------------------------------------------------ Access items */
 
-/** Everything web — site, domain, Google properties, newsletters. */
-const WEB_EMAIL = "hi.neometa@gmail.com";
-/** The ad platforms only. */
-const ADS_EMAIL = "dmorgan18@googlemail.com";
+/*
+  Who gets invited to what. Split by who actually does the work, not by
+  category — Danny takes the profiles and ad platforms, Simon takes the site
+  and tracking. Each row names its own address so a client never has to guess.
+
+  Note both of Danny's addresses are in use: the ad platforms go to his Gmail
+  (which is what those accounts are tied to), TikTok to his work address.
+*/
+const SIMON = "simon@clinicevolution.com";
+const DANNY_GMAIL = "dmorgan18@googlemail.com";
+const DANNY_WORK = "danny@clinicevolution.com";
 
 const HAS_ADS = "Yes, they are already set up";
 const WANTS_ADS_HELP = "No — and we would like help setting them up";
@@ -87,90 +94,89 @@ export const ACCESS_ITEMS: AccessItem[] = [
     id: "registrar",
     label: "Your domain name",
     how: "Whoever you bought the domain from — often GoDaddy, 123-reg or Namecheap. They all have a way to add a second person. Not sure who it is with? Say so and we will find out.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "hosting",
     label: "Web hosting",
     how: "The company the website actually sits on, sometimes the same as the domain. Most allow a second login.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "website",
     label: "Your website login",
     how: "In WordPress: Users, Add New, set the role to Administrator. Squarespace, Wix and Webflow all have an equivalent invite.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "gbp",
     label: "Google Business Profile",
     how: "The listing that shows on Google Maps. Business Profile, Settings, People and access, Add, then Manager.",
-    grantTo: WEB_EMAIL,
+    grantTo: DANNY_GMAIL,
   },
   {
     id: "ga4",
     label: "Google Analytics",
     how: "Admin, Property access management, add the email as Editor. Plenty of clinics do not have this set up — that is fine, we will create it.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "gsc",
     label: "Google Search Console",
     how: "Settings, Users and permissions, Add user, Full. If it does not exist we will set it up.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "meta",
     label: "Facebook and Instagram",
     how: "Meta Business Suite, Settings, People, invite the email with Content access. This is your pages, not advertising.",
-    grantTo: WEB_EMAIL,
+    grantTo: DANNY_GMAIL,
   },
   {
     id: "booking",
     label: "Booking system",
     how: "Add us as a staff or admin user, so we can connect booking to the new site.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
   },
   {
     id: "gtm",
     label: "Google Tag Manager",
     how: "Admin, User Management, the + button, then Publish permission. Only relevant if someone set this up for you previously.",
-    grantTo: WEB_EMAIL,
-    showIf: runsAds,
+    grantTo: SIMON,
   },
   {
     id: "google-ads",
     label: "Google Ads",
     how: "Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that needs accepting, so it will not show as active immediately.",
-    grantTo: ADS_EMAIL,
+    grantTo: DANNY_GMAIL,
     showIf: runsAds,
   },
   {
     id: "meta-ads",
     label: "Meta Ads account",
     how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.",
-    grantTo: ADS_EMAIL,
+    grantTo: DANNY_GMAIL,
     showIf: runsAds,
   },
   {
     id: "tiktok-ads",
     label: "TikTok Ads",
     how: "TikTok Ads Manager, Assets, Users, Invite, choose Admin.",
-    grantTo: ADS_EMAIL,
+    grantTo: DANNY_WORK,
     showIf: runsAds,
   },
   {
     id: "email",
     label: "Newsletter software",
     how: "Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
     showIf: sendsNewsletters,
   },
   {
     id: "payments",
     label: "Payments",
     how: "Stripe, Settings, Team, invite as Developer.",
-    grantTo: WEB_EMAIL,
+    grantTo: SIMON,
     showIf: takesPayments,
   },
 ];

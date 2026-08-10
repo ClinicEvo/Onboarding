@@ -169,57 +169,55 @@ For each item the client picks one of: **Done**, **Will do**, **Do not have one*
 
 **Your domain name**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 Whoever you bought the domain from — often GoDaddy, 123-reg or Namecheap. They all have a way to add a second person. Not sure who it is with? Say so and we will find out.
 
 **Web hosting**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 The company the website actually sits on, sometimes the same as the domain. Most allow a second login.
 
 **Your website login**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 In WordPress: Users, Add New, set the role to Administrator. Squarespace, Wix and Webflow all have an equivalent invite.
 
 **Google Business Profile**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **dmorgan18@googlemail.com**, not the address given above.
 
 The listing that shows on Google Maps. Business Profile, Settings, People and access, Add, then Manager.
 
 **Google Analytics**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 Admin, Property access management, add the email as Editor. Plenty of clinics do not have this set up — that is fine, we will create it.
 
 **Google Search Console**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 Settings, Users and permissions, Add user, Full. If it does not exist we will set it up.
 
 **Facebook and Instagram**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **dmorgan18@googlemail.com**, not the address given above.
 
 Meta Business Suite, Settings, People, invite the email with Content access. This is your pages, not advertising.
 
 **Booking system**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 Add us as a staff or admin user, so we can connect booking to the new site.
 
 **Google Tag Manager**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
-
-> Only if they run paid ads.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 Admin, User Management, the + button, then Publish permission. Only relevant if someone set this up for you previously.
 
@@ -241,7 +239,7 @@ Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then M
 
 **TikTok Ads**
 
-> Sent to **dmorgan18@googlemail.com**, not the address given above.
+> Sent to **danny@clinicevolution.com**, not the address given above.
 
 > Only if they run paid ads.
 
@@ -249,7 +247,7 @@ TikTok Ads Manager, Assets, Users, Invite, choose Admin.
 
 **Newsletter software**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 > Only if they send newsletters.
 
@@ -257,7 +255,7 @@ Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.
 
 **Payments**
 
-> Sent to **hi.neometa@gmail.com**, not the address given above.
+> Sent to **simon@clinicevolution.com**, not the address given above.
 
 > Only if the site takes payments.
 

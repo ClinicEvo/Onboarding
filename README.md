@@ -32,11 +32,21 @@ the master discovery checklist — and in the kickoff conversation, where answer
 are richer than textareas.
 
 The access step softens the ask three ways: filter questions (ads, payments,
-newsletters) mean a typical clinic sees 8 accounts rather than 14; the neutral
+newsletters) mean a typical clinic sees 9 accounts rather than 14; the neutral
 option is **Not sure — help me** rather than an admission of failure; and every
-row names exactly which email to invite —
-web rows go to `hi.neometa@gmail.com`, ad platforms to
-`dmorgan18@googlemail.com`.
+row names exactly which email to invite, so nobody has to guess.
+
+Those addresses are split by who does the work, not by category:
+
+| Address | Rows |
+| --- | --- |
+| `simon@clinicevolution.com` | Domain, hosting, website login, Analytics, Search Console, Tag Manager, booking, newsletter, payments |
+| `dmorgan18@googlemail.com` | Google Business Profile, Facebook/Instagram, Google Ads, Meta Ads |
+| `danny@clinicevolution.com` | TikTok Ads |
+
+Both of Danny's addresses are deliberately in use — the Google and Meta ad
+platforms are tied to his Gmail, TikTok to his work address. Worth knowing
+before "tidying" them into one.
 
 ---
 
