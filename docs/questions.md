@@ -137,31 +137,15 @@ Long text
 
 *We now connect the accounts we will be working on. No passwords — you invite us in, and you can remove us at any time. Do not worry if you are unsure where something lives: pick “Not sure — help me” and we will sort it together.*
 
-### Do you run paid ads?
-
-Pick one · **Required**
-
-- Yes, they are already set up
-- No — and we would like help setting them up
-- No, and not planning to
-
-> Google, Facebook, Instagram or TikTok. If you would like ads but have no accounts, pick the middle option and we will set them up with you.
-
-### Does your website take payments?
+### Are we going to be helping you with paid ads?
 
 Pick one · **Required**
 
 - Yes
 - No
+- Not decided yet
 
-> Selling packages, vouchers or classes online, as opposed to taking payment in the clinic.
-
-### Do you send newsletters or marketing emails?
-
-Pick one · **Required**
-
-- Yes
-- No
+> Google, Meta or TikTok. Answer yes even if you have no accounts yet — we will set them up with you.
 
 ### Access checklist
 
@@ -225,15 +209,11 @@ Admin, User Management, the + button, then Publish permission. Only relevant if 
 
 > Sent to **dmorgan18@googlemail.com**, not the address given above.
 
-> Only if they run paid ads.
-
 Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that needs accepting, so it will not show as active immediately.
 
 **Meta Ads account**
 
 > Sent to **dmorgan18@googlemail.com**, not the address given above.
-
-> Only if they run paid ads.
 
 Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.
 
@@ -241,23 +221,17 @@ Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then M
 
 > Sent to **danny@clinicevolution.com**, not the address given above.
 
-> Only if they run paid ads.
-
 TikTok Ads Manager, Assets, Users, Invite, choose Admin.
 
 **Newsletter software**
 
 > Sent to **simon@clinicevolution.com**, not the address given above.
 
-> Only if they send newsletters.
-
 Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.
 
 **Payments**
 
 > Sent to **simon@clinicevolution.com**, not the address given above.
-
-> Only if the site takes payments.
 
 Stripe, Settings, Team, invite as Developer.
 

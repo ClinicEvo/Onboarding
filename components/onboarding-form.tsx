@@ -24,7 +24,7 @@ import { AccessGrid, CheckboxGroup, RadioGroup, TextField } from "./fields";
 
 /* Versioned so drafts saved against an older question set are not restored
    into a form they no longer match. Bump when the questions change shape. */
-const DRAFT_KEY = "clinicevo-draft-v3";
+const DRAFT_KEY = "clinicevo-draft-v4";
 
 /* Canonical "have we hydrated yet" check: false on the server, true on the
    client, with nothing to subscribe to. */

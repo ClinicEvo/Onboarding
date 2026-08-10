@@ -31,10 +31,20 @@ Everything cut lives in [`docs/questions.md`](docs/questions.md)'s companion —
 the master discovery checklist — and in the kickoff conversation, where answers
 are richer than textareas.
 
-The access step softens the ask three ways: filter questions (ads, payments,
-newsletters) mean a typical clinic sees 9 accounts rather than 14; the neutral
-option is **Not sure — help me** rather than an admission of failure; and every
-row names exactly which email to invite, so nobody has to guess.
+All 14 accounts are always on display. An earlier version hid the ones a
+client said they did not have, which sounds kinder but means a clinic never sees
+the shape of what Clinic Evo actually works on — and hiding TikTok because
+somebody answered "no" to a filter question is a worse outcome than showing it
+and letting them mark **Do not have one**.
+
+Two things carry the weight instead: **Not sure — help me** is a first-class
+answer rather than an admission of failure, and every row names exactly which
+email to invite, so nobody has to guess or remember.
+
+The one scope question left is *are we going to be helping you with paid ads?*
+It filters nothing. It tells the brief whether an unanswered Google Ads row is
+irrelevant or a job — if ads are in scope and a platform is marked
+**Do not have one**, the brief flags it as an account to create.
 
 Those addresses are split by who does the work, not by category:
 

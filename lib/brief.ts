@@ -1,6 +1,7 @@
 import {
   STEPS,
-  ADS_HELP_ANSWER,
+  AD_PLATFORM_IDS,
+  adsInScope,
   visibleFields,
   visibleAccessItems,
   type Values,
@@ -101,11 +102,24 @@ export function renderBrief(
     lines.push("");
   }
 
-  if (values.adAccounts === ADS_HELP_ANSWER) {
-    lines.push(
-      "**They want help setting up ad accounts.** No ad platform access was requested for that reason.",
-    );
-    lines.push("");
+  /*
+    Ads are in scope but a platform has no account — that is setup work, and it
+    is easy to miss because the row reads like any other unanswered one.
+  */
+  if (adsInScope(values)) {
+    const missing = visibleAccessItems(values)
+      .filter(
+        (i) =>
+          AD_PLATFORM_IDS.includes(i.id) &&
+          accessGrants[i.id] === "Do not have one",
+      )
+      .map((i) => i.label);
+    if (missing.length > 0) {
+      lines.push(
+        `**Ad accounts to create:** ${missing.join(", ")}. Ads are in scope but these do not exist yet.`,
+      );
+      lines.push("");
+    }
   }
 
   if (values.secretLink) {

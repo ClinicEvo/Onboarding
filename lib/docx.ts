@@ -13,7 +13,8 @@ import {
 
 import {
   STEPS,
-  ADS_HELP_ANSWER,
+  AD_PLATFORM_IDS,
+  adsInScope,
   visibleFields,
   visibleAccessItems,
   type Values,
@@ -215,20 +216,29 @@ export function buildBriefDocx(
     );
   }
 
-  if (values.adAccounts === ADS_HELP_ANSWER) {
-    children.push(
-      new Paragraph({
-        spacing: { before: 160 },
-        children: [
-          new TextRun({
-            text: "They want help setting up ad accounts. No ad platform access was requested for that reason.",
-            bold: true,
-            size: 21,
-            color: INK,
-          }),
-        ],
-      }),
-    );
+  if (adsInScope(values)) {
+    const missing = visibleAccessItems(values)
+      .filter(
+        (i) =>
+          AD_PLATFORM_IDS.includes(i.id) &&
+          accessGrants[i.id] === "Do not have one",
+      )
+      .map((i) => i.label);
+    if (missing.length > 0) {
+      children.push(
+        new Paragraph({
+          spacing: { before: 160 },
+          children: [
+            new TextRun({ text: "Ad accounts to create: ", bold: true, size: 21, color: ACCENT }),
+            new TextRun({
+              text: `${missing.join(", ")}. Ads are in scope but these do not exist yet.`,
+              size: 21,
+              color: INK,
+            }),
+          ],
+        }),
+      );
+    }
   }
 
   if (values.secretLink) {

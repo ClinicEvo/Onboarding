@@ -9,8 +9,9 @@
  * for the kickoff call.
  *
  * `showIf` receives the current answers and returns whether to render the
- * field. On the access step it keeps the account list down to what each
- * client actually has.
+ * field. Every account is on display regardless — a client should be able to
+ * see the whole picture of what we work on, and "Do not have one" is a
+ * perfectly good answer.
  */
 
 export type BusinessType =
@@ -73,12 +74,7 @@ const SIMON = "simon@clinicevolution.com";
 const DANNY_GMAIL = "dmorgan18@googlemail.com";
 const DANNY_WORK = "danny@clinicevolution.com";
 
-const HAS_ADS = "Yes, they are already set up";
-const WANTS_ADS_HELP = "No — and we would like help setting them up";
-
-const runsAds = (v: Values) => v.adAccounts === HAS_ADS;
-const takesPayments = (v: Values) => v.onlinePayments === "Yes";
-const sendsNewsletters = (v: Values) => v.newsletters === "Yes";
+const ADS_IN_SCOPE = "Yes";
 
 export interface AccessItem {
   id: string;
@@ -149,35 +145,30 @@ export const ACCESS_ITEMS: AccessItem[] = [
     label: "Google Ads",
     how: "Admin, Access and security, the + button, enter the email and choose Admin. Google sends an invitation that needs accepting, so it will not show as active immediately.",
     grantTo: DANNY_GMAIL,
-    showIf: runsAds,
   },
   {
     id: "meta-ads",
     label: "Meta Ads account",
     how: "Meta Business Suite, Settings, Ad accounts, pick the account, Add people, then Manage campaigns. Separate from your pages above.",
     grantTo: DANNY_GMAIL,
-    showIf: runsAds,
   },
   {
     id: "tiktok-ads",
     label: "TikTok Ads",
     how: "TikTok Ads Manager, Assets, Users, Invite, choose Admin.",
     grantTo: DANNY_WORK,
-    showIf: runsAds,
   },
   {
     id: "email",
     label: "Newsletter software",
     how: "Mailchimp, Klaviyo, Brevo and similar all let you invite a second user.",
     grantTo: SIMON,
-    showIf: sendsNewsletters,
   },
   {
     id: "payments",
     label: "Payments",
     how: "Stripe, Settings, Team, invite as Developer.",
     grantTo: SIMON,
-    showIf: takesPayments,
   },
 ];
 
@@ -348,27 +339,12 @@ export const STEPS: Step[] = [
       "We now connect the accounts we will be working on. No passwords — you invite us in, and you can remove us at any time. Do not worry if you are unsure where something lives: pick “Not sure — help me” and we will sort it together.",
     fields: [
       {
-        id: "adAccounts",
-        label: "Do you run paid ads?",
+        id: "adsInScope",
+        label: "Are we going to be helping you with paid ads?",
         type: "radio",
         required: true,
-        options: [HAS_ADS, WANTS_ADS_HELP, "No, and not planning to"],
-        help: "Google, Facebook, Instagram or TikTok. If you would like ads but have no accounts, pick the middle option and we will set them up with you.",
-      },
-      {
-        id: "onlinePayments",
-        label: "Does your website take payments?",
-        type: "radio",
-        required: true,
-        options: ["Yes", "No"],
-        help: "Selling packages, vouchers or classes online, as opposed to taking payment in the clinic.",
-      },
-      {
-        id: "newsletters",
-        label: "Do you send newsletters or marketing emails?",
-        type: "radio",
-        required: true,
-        options: ["Yes", "No"],
+        options: [ADS_IN_SCOPE, "No", "Not decided yet"],
+        help: "Google, Meta or TikTok. Answer yes even if you have no accounts yet — we will set them up with you.",
       },
       { id: "accessGrants", label: "Accounts", type: "access" },
       {
@@ -395,8 +371,11 @@ export const STEPS: Step[] = [
   },
 ];
 
-/** Flagged in the brief so the ads setup work is not missed. */
-export const ADS_HELP_ANSWER = WANTS_ADS_HELP;
+/** Whether paid ads are in scope for this client. */
+export const adsInScope = (v: Values) => v.adsInScope === ADS_IN_SCOPE;
+
+/** Ad platform rows, for spotting accounts that still need creating. */
+export const AD_PLATFORM_IDS = ["google-ads", "meta-ads", "tiktok-ads"];
 
 /** Fields visible for the current answers, per step. */
 export function visibleFields(step: Step, values: Values): Field[] {
