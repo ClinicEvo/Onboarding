@@ -15,7 +15,7 @@ It collects **access grants, not passwords**. See [Why no password fields](#why-
 | The basics | Name, type, contact, locations |
 | Your business | Services, commercial priorities, booking system, what to improve |
 | Your website | Current site, who looks after it, sites they like, photos, assets |
-| Access | Three filter questions, then only the accounts that apply |
+| Access | One scope question, then all 14 accounts |
 
 About ten minutes. The rule for what earns a place: **only ask what the client
 genuinely knows better than us** — their business, their taste, their accounts.
